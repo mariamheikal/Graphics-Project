@@ -19,8 +19,10 @@ char title[] = "3D Model Loader Sample";
 //game variables
 bool start = false;
 bool jumping = false;
-int track = 0;
+float track = 0;
 float xoffset = 0;
+float offsetCounter = 0.1;
+float limitOffset = 0;
 float yJump = 4;
 float jumpOffset = 0.0;
 float jumpCounter = 1.0;
@@ -175,21 +177,21 @@ void RenderGround()
 	}
 	else glBindTexture(GL_TEXTURE_2D, tex_groundMode2.texture[0]);
 	if (start) {
-		track += 1;
-		if (track % 7 == 0) {
-			int obstaclePos = track;
-			if (track % 2==0 && !lane1 && track>= obstaclePos && track<= obstaclePos + 1) {
-				 start = false;
-				 //put whatever you want to happen when you hit an object here
-			}
-			if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-				//put whatever you want to happen when you hit an object here
-				start = false;
+		track += 0.1;
+		//if ((int)track % 7 == 0) {
+		//	float obstaclePos = track;
+		//	if ((int)track % 2==0 && !lane1 && track>= obstaclePos && track<= obstaclePos + 1) {
+		//		 start = false;
+		//		 //put whatever you want to happen when you hit an object here
+		//	}
+		//	if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+		//		//put whatever you want to happen when you hit an object here
+		//		start = false;
 
-			}
+		//	}
 
-			
-		}
+		//	
+		//}
 	}
 	if (track > 70) {
 		track = 0;
@@ -477,12 +479,16 @@ void myDisplay(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	/*cout << xoffset;*/
+	//animation between lanes
+	if ((xoffset < limitOffset && offsetCounter>0) ||(xoffset > limitOffset && offsetCounter < 0) ) {
+		xoffset += offsetCounter;
+	}
 	// Draw Ground
 	RenderGround();
 	//renderObstacles();
 	//Draw Character
 	glPushMatrix();
-	glTranslated(0, 4+jumpOffset, 15);
+	glTranslated(0, 4.0+jumpOffset, 15);
 	glScaled(0.15, 0.15, 0.15);
 	drawMinion();
 	glPopMatrix();
@@ -529,15 +535,19 @@ void myKeyboard(unsigned char button, int x, int y)
 	 break;
 	
 	case 'a': {
+		offsetCounter = 0.1;
 
-			xoffset = 0.28;
+			//xoffset = 0.28;
+			limitOffset= 0.28;
 			lane1 = true;
 	}
     break;
 	
 	case 'd':
 	{
-			xoffset =-6;
+		limitOffset = -6;
+		offsetCounter = -0.1;
+			//xoffset =-6;
 			lane1 = false;
 	}
 	break;
@@ -557,13 +567,13 @@ void myKeyboard(unsigned char button, int x, int y)
 		start = true;
 	break;
 	
-	case 'w':
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	break;
-	
-	case 'r':
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	break;
+	//case 'w':
+	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//break;
+	//
+	//case 'r':
+	//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//break;
 	
 	case 27:
 		exit(0);
@@ -580,7 +590,7 @@ void myKeyboard(unsigned char button, int x, int y)
 //=======================================================================
 void anim() {
 	if (jumping) {
-		/*cout << "Jumping";*/
+		//cout << "Jumping";
 		jumpOffset = 3 * jumpCounter - jumpCounter * jumpCounter;
 		jumpCounter += 0.07;
 		if (jumpOffset < 0) {
