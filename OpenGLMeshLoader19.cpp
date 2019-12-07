@@ -56,9 +56,14 @@ public:
 };
 
 // Camera variables
-Vector Eye(0, 5, 20);
-Vector At(0, 0, 0);
-Vector Up(0, 1, 0);
+Vector Eye3rd(0, 5, 20);
+Vector At3rd(0, 0, 0);
+Vector Up3rd(0, 1, 0);
+Vector EyeFps(0,2.5, 14.5);
+Vector AtFps(0, 0, 0);
+Vector UpFps(0, 1, 0);
+
+bool firstPerson = true;
 int cameraZoom = 0;
 
 // Model Variables
@@ -142,8 +147,12 @@ void myInit(void)
 	glMatrixMode(GL_MODELVIEW);
 
 	glLoadIdentity();
-
-	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
+	if (!firstPerson) {
+		gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);
+	}
+	else {
+		gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
+	}
 	//*******************************************************************************************//
 	// EYE (ex, ey, ez): defines the location of the camera.									 //
 	// AT (ax, ay, az):	 denotes the direction where the camera is aiming at.					 //
@@ -166,7 +175,7 @@ void RenderGround()
 {
 	glDisable(GL_LIGHTING);	// Disable lighting 
 
-	if(mode1 && !mode2) glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	if (mode1 && !mode2) glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 	else glColor3f(0.50, 0.72, 0.20);
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
@@ -178,9 +187,9 @@ void RenderGround()
 		track += 1;
 		if (track % 7 == 0) {
 			int obstaclePos = track;
-			if (track % 2==0 && !lane1 && track>= obstaclePos && track<= obstaclePos + 1) {
-				 start = false;
-				 //put whatever you want to happen when you hit an object here
+			if (track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+				start = false;
+				//put whatever you want to happen when you hit an object here
 			}
 			if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
 				//put whatever you want to happen when you hit an object here
@@ -188,17 +197,20 @@ void RenderGround()
 
 			}
 
-			
+
 		}
 	}
 	if (track > 70) {
 		track = 0;
+		start = false;
+		mode2 = true;
+		mode1 = false;
 	}
 
 
 
 	glPushMatrix();
-	
+
 	//Part 1 of lane 1
 	glTranslatef(0.0, 0.0, track);
 	glTranslatef(xoffset, 0.0, 0.0);
@@ -214,7 +226,7 @@ void RenderGround()
 	glVertex3f(-2, 0, 20);
 	glEnd();
 
-	for (int i = 0; i < 70; i += 7) {
+	for (int i = 0; i < 63; i += 7) {
 		float x1 = -2;
 		float x2 = 2;
 		float y1 = 0;
@@ -225,7 +237,7 @@ void RenderGround()
 			x1 += 6;
 			x2 += 6;
 		}
-		
+
 		//obstacles
 		glBegin(GL_QUADS);
 		glNormal3f(0, 1, 0);	// Set quad normal direction.
@@ -248,7 +260,7 @@ void RenderGround()
 		glVertex3f(x1, y2, z1 - i);
 		glEnd();
 	}
-	
+
 
 
 	//Part 1 of lane 2
@@ -280,7 +292,7 @@ void RenderGround()
 	glTexCoord2f(0, 0.85);
 	glVertex3f(-2, 0, 20);
 	glEnd();
-	
+
 	//Part 2 of lane 2
 	glTranslatef(6.0, 0.0, 0.0);
 
@@ -305,19 +317,6 @@ void RenderGround()
 
 }
 
-//void renderObstacles() {
-//	glTranslatef(0.0, 0.0, track);
-//	glTranslatef(xoffset, 0.0, 0.0);
-//	glBegin(GL_QUADS);
-//	glNormal3f(0, 1, 0);	// Set quad normal direction.
-//	glVertex3f(-2, 0, -50);
-//	glVertex3f(2, 0, -50);
-//	glVertex3f(2, 0, 20);
-//	glVertex3f(-2, 0, 20);
-//	glEnd();
-//	
-//
-//}
 
 void timerMoveArms(int val)
 {
@@ -364,10 +363,10 @@ void drawMinion()
 
 
 
-	GLUquadricObj *quadratic;
+	GLUquadricObj* quadratic;
 	quadratic = gluNewQuadric();
 
-	GLUquadricObj *quadraticJeans;
+	GLUquadricObj* quadraticJeans;
 	quadraticJeans = gluNewQuadric();
 	gluQuadricTexture(quadraticJeans, GL_TRUE);
 
@@ -375,17 +374,18 @@ void drawMinion()
 
 
 	glPushMatrix();
+	//editing
 	glTranslated(0, -10, 0);
 	glScaled(400, 150, 400);
 	glRotated(-45, 0, 1, 0);
 	//CLOTHES
-	if(mode1 && !mode2) glBindTexture(GL_TEXTURE_2D, tex_jeans.texture[0]);
+	if (mode1 && !mode2) glBindTexture(GL_TEXTURE_2D, tex_jeans.texture[0]);
 	else glBindTexture(GL_TEXTURE_2D, tex_jeansMode2.texture[0]);
 	glPushMatrix();
 	glTranslated(0, -0.017, 0);
 	glRotated(90, 0, 1, 0);
 	glRotated(90, 1, 0, 0);
-    if(mode1 && !mode2) glColor3f(0.33, 0.33, 0.33);
+	if (mode1 && !mode2) glColor3f(0.33, 0.33, 0.33);
 	else glColor3f(0.45, 0.63, 0.76);
 	gluCylinder(quadraticJeans, 0.005, 0.005, 0.02, 300, 300);
 	glPopMatrix();
@@ -415,7 +415,7 @@ void drawMinion()
 	glDisable(GL_TEXTURE_2D);
 	//HEAD
 	glPushMatrix();
-	if(mode1 && !mode2) glColor3ub(144, 94, 173);
+	if (mode1 && !mode2) glColor3ub(144, 94, 173);
 	else glColor3ub(252, 224, 41);
 	gluSphere(quadratic, 0.0005, 30, 30);
 	glPopMatrix();
@@ -442,7 +442,7 @@ void drawMinion()
 	glPopMatrix();
 	//GOGGLES
 	glPushMatrix();
-	if(mode1 && !mode2) glColor3f(0, 0, 0);
+	if (mode1 && !mode2) glColor3f(0, 0, 0);
 	else glColor3ub(10, 117, 188);
 	glTranslated(0, -0.0045, 0);
 	glRotated(90, 0, 1, 0);
@@ -482,11 +482,11 @@ void myDisplay(void)
 	//renderObstacles();
 	//Draw Character
 	glPushMatrix();
-	glTranslated(0, 4+jumpOffset, 15);
+	glTranslated(0, 4 + jumpOffset, 15);
 	glScaled(0.15, 0.15, 0.15);
 	drawMinion();
 	glPopMatrix();
-
+	
 	// Draw Tree Model
 	//glPushMatrix();
 	//glTranslatef(10, 0, 0);
@@ -524,55 +524,60 @@ void myKeyboard(unsigned char button, int x, int y)
 	switch (button)
 	{
 	case 'u': {
-		jumping = true; 
+		jumping = true;
 	}
-	 break;
-	
+			break;
+
 	case 'a': {
 
-			xoffset = 0.28;
-			lane1 = true;
+		xoffset = 0.28;
+		lane1 = true;
 	}
-    break;
-	
+			break;
+
 	case 'd':
 	{
-			xoffset =-6;
-			lane1 = false;
+		xoffset = -6;
+		lane1 = false;
 	}
 	break;
 
 	case 'h': {
-		mode2 = true;
-		mode1 = false;
+		firstPerson = !firstPerson;
+		if (!firstPerson) {
+			cout << Eye3rd.x<< Eye3rd.y<< Eye3rd.z<< At3rd.x<< At3rd.y<< At3rd.z<< Up3rd.x<< Up3rd.y<< Up3rd.z << endl;
+			gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);
+		}
+		else {
+			cout << EyeFps.x << EyeFps.y << EyeFps.z << AtFps.x << AtFps.y << AtFps.z << UpFps.x << UpFps.y << UpFps.z << endl;
+			gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
+		}
 	}
-		break;
+			break;
 	case 'j': {
-		mode2 = false;
-		mode1 = true;
 	}
-	 break;
-	
+			break;
+
 	case ' ':
 		start = true;
-	break;
-	
+		break;
+
 	case 'w':
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	break;
-	
+		break;
+
 	case 'r':
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	break;
-	
+		break;
+
 	case 27:
 		exit(0);
-	break;
-	
+		break;
+
 	default:
 		break;
 	}
- 	glutPostRedisplay();
+	glutPostRedisplay();
 }
 
 //=======================================================================
@@ -602,20 +607,27 @@ void myMotion(int x, int y)
 	if (cameraZoom - y > 0)
 	{
 		//	Eye.x += -0.1;
-		Eye.z += -0.1;
+		Eye3rd.z += -0.1;
+		EyeFps.z += -0.1;
 	}
 	else
 	{
 		//	Eye.x += 0.1;
-		Eye.z += 0.1;
+		Eye3rd.z += 0.1;
+		EyeFps.z += 0.1;
 	}
 
 	cameraZoom = y;
 
 	glLoadIdentity();	//Clear Model_View Matrix
+	if (!firstPerson) {
+		gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);	//Setup Camera with modified paramters
 
-	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);	//Setup Camera with modified paramters
-
+	}
+	else {
+		 gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
+	}
+	
 	GLfloat light_position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
@@ -658,7 +670,13 @@ void myReshape(int w, int h)
 	// go back to modelview matrix so we can move the objects about
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
+	if (!firstPerson) {
+		gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);
+
+	}
+	else {
+		gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
+	}
 }
 
 //=======================================================================
@@ -675,7 +693,7 @@ void LoadAssets()
 	tex_groundMode2.Load("Textures/grass.bmp");
 	tex_jeans.Load("Textures/jeans.bmp");
 	tex_jeansMode2.Load("Textures/jeansMode2.bmp");
-/*	loadBMP(&tex, "Textures/sky.bmp", true)*/;
+	/*	loadBMP(&tex, "Textures/sky.bmp", true)*/;
 
 }
 
