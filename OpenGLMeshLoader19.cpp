@@ -59,7 +59,7 @@ public:
 Vector Eye3rd(0, 5, 20);
 Vector At3rd(0, 0, 0);
 Vector Up3rd(0, 1, 0);
-Vector EyeFps(0, 2.5, 14.5);
+Vector EyeFps(0,2.5, 14.5);
 Vector AtFps(0, 0, 0);
 Vector UpFps(0, 1, 0);
 
@@ -226,36 +226,28 @@ void RenderGround()
 	glVertex3f(-2, 0, 20);
 	glEnd();
 
-	for (int i = 0; i < 63; i += 7) {
+	//obstacles
+	for (int i = -7; i < 63; i += 7) {
 		float x1 = -2;
 		float x2 = 2;
 		float y1 = 0;
 		float y2 = 2;
 		float z1 = 0;
-		float z2 = 1;
 		if (i % 2 == 0) {
 			x1 += 6;
 			x2 += 6;
 		}
 
-		//obstacles
+		//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
 		glBegin(GL_QUADS);
 		glNormal3f(0, 1, 0);	// Set quad normal direction.
 		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
 		glVertex3f(x1, y1, z1 - i);
-		glTexCoord2f(0.5, 0);
-		glVertex3f(x2, y1, -z2 - i);
-		glTexCoord2f(0.85, 0.85);
-		glVertex3f(x1, y1, -z2 - i);
 		glTexCoord2f(0, 0.85);
 		glVertex3f(x2, y1, z1 - i);
-
 		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
 		glVertex3f(x2, y2, z1 - i);
 		glTexCoord2f(0.5, 0);
-		glVertex3f(x2, y2, -z2 - i);
-		glTexCoord2f(0.85, 0.85);
-		glVertex3f(x1, y2, -z2 - i);
 		glTexCoord2f(0, 0.85);
 		glVertex3f(x1, y2, z1 - i);
 		glEnd();
@@ -479,14 +471,13 @@ void myDisplay(void)
 	/*cout << xoffset;*/
 	// Draw Ground
 	RenderGround();
-	//renderObstacles();
 	//Draw Character
 	glPushMatrix();
 	glTranslated(0, 4 + jumpOffset, 15);
 	glScaled(0.15, 0.15, 0.15);
 	drawMinion();
 	glPopMatrix();
-
+	
 	// Draw Tree Model
 	//glPushMatrix();
 	//glTranslatef(10, 0, 0);
@@ -546,7 +537,7 @@ void myKeyboard(unsigned char button, int x, int y)
 		glLoadIdentity();	//Clear Model_View Matrix
 		firstPerson = !firstPerson;
 		if (!firstPerson) {
-			cout << Eye3rd.x << Eye3rd.y << Eye3rd.z << At3rd.x << At3rd.y << At3rd.z << Up3rd.x << Up3rd.y << Up3rd.z << endl;
+			cout << Eye3rd.x<< Eye3rd.y<< Eye3rd.z<< At3rd.x<< At3rd.y<< At3rd.z<< Up3rd.x<< Up3rd.y<< Up3rd.z << endl;
 			gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);
 			glutPostRedisplay();
 		}
@@ -628,9 +619,9 @@ void myMotion(int x, int y)
 
 	}
 	else {
-		gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
+		 gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
 	}
-
+	
 	GLfloat light_position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
