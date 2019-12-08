@@ -184,22 +184,45 @@ void RenderGround()
 	}
 	else glBindTexture(GL_TEXTURE_2D, tex_groundMode2.texture[0]);
 	if (start) {
+		if (mode2) {
+			track += 0.5;
+		}
 		track += 1;
-		if (track % 7 == 0) {
-			int obstaclePos = track;
-			if (track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-				start = false;
-				//put whatever you want to happen when you hit an object here
-			}
-			if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-				//put whatever you want to happen when you hit an object here
-				start = false;
+		if (mode1) {
+			if (track % 7 == 0) {
+				int obstaclePos = track;
+				if (track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+					start = false;
+					//put whatever you want to happen when you hit an object here
+				}
+				if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+					//put whatever you want to happen when you hit an object here
+					start = false;
+
+				}
+
 
 			}
-
 
 		}
-	}
+		else {
+			if (track % 5 == 0) {
+				int obstaclePos = track;
+				if (track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+					start = false;
+					//put whatever you want to happen when you hit an object here
+				}
+				if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+					//put whatever you want to happen when you hit an object here
+					start = false;
+
+				}
+
+
+			}
+
+		}
+			}
 	if (track > 70) {
 		track = 0;
 		start = false;
@@ -225,33 +248,63 @@ void RenderGround()
 	glTexCoord2f(0, 0.85);
 	glVertex3f(-2, 0, 20);
 	glEnd();
+	if (mode1 & !mode2) {
+		//obstacles
+		for (int i = -7; i < 63; i += 7) {
+			float x1 = -2;
+			float x2 = 2;
+			float y1 = 0;
+			float y2 = 2;
+			float z1 = 0;
+			if (i % 2 == 0) {
+				x1 += 6;
+				x2 += 6;
+			}
 
-	//obstacles
-	for (int i = -7; i < 63; i += 7) {
-		float x1 = -2;
-		float x2 = 2;
-		float y1 = 0;
-		float y2 = 2;
-		float z1 = 0;
-		if (i % 2 == 0) {
-			x1 += 6;
-			x2 += 6;
+			//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
+			glBegin(GL_QUADS);
+			glNormal3f(0, 1, 0);	// Set quad normal direction.
+			glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+			glVertex3f(x1, y1, z1 - i);
+			glTexCoord2f(0, 0.85);
+			glVertex3f(x2, y1, z1 - i);
+			glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+			glVertex3f(x2, y2, z1 - i);
+			glTexCoord2f(0.5, 0);
+			glTexCoord2f(0, 0.85);
+			glVertex3f(x1, y2, z1 - i);
+			glEnd();
 		}
-
-		//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
-		glBegin(GL_QUADS);
-		glNormal3f(0, 1, 0);	// Set quad normal direction.
-		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-		glVertex3f(x1, y1, z1 - i);
-		glTexCoord2f(0, 0.85);
-		glVertex3f(x2, y1, z1 - i);
-		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-		glVertex3f(x2, y2, z1 - i);
-		glTexCoord2f(0.5, 0);
-		glTexCoord2f(0, 0.85);
-		glVertex3f(x1, y2, z1 - i);
-		glEnd();
 	}
+	else {
+		//obstacles
+		for (int i = -7; i < 63; i += 5) {
+			float x1 = -2;
+			float x2 = 2;
+			float y1 = 0;
+			float y2 = 2;
+			float z1 = 0;
+			if (i % 2 == 0) {
+				x1 += 6;
+				x2 += 6;
+			}
+
+			//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
+			glBegin(GL_QUADS);
+			glNormal3f(0, 1, 0);	// Set quad normal direction.
+			glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+			glVertex3f(x1, y1, z1 - i);
+			glTexCoord2f(0, 0.85);
+			glVertex3f(x2, y1, z1 - i);
+			glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+			glVertex3f(x2, y2, z1 - i);
+			glTexCoord2f(0.5, 0);
+			glTexCoord2f(0, 0.85);
+			glVertex3f(x1, y2, z1 - i);
+			glEnd();
+		}
+	}
+	
 
 
 
