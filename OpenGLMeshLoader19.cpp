@@ -25,6 +25,7 @@ float yJump = 4;
 float jumpOffset = 0.0;
 float jumpCounter = 1.0;
 bool lane1 = true;
+bool gameover = false;
 // 3D Projection Options
 GLdouble fovy = 45.0;
 GLdouble aspectRatio = (GLdouble)WIDTH / (GLdouble)HEIGHT;
@@ -192,13 +193,14 @@ void RenderGround()
 			if (track % 7 == 0) {
 				int obstaclePos = track;
 				if (track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+					cout << "here here" << endl;
 					start = false;
-					//put whatever you want to happen when you hit an object here
+					gameover = true;
 				}
 				if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-					//put whatever you want to happen when you hit an object here
+					cout << "here here 2" << endl;
 					start = false;
-
+					gameover = true;
 				}
 
 
@@ -209,13 +211,14 @@ void RenderGround()
 			if (track % 5 == 0) {
 				int obstaclePos = track;
 				if (track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+					cout << "here" << endl;
 					start = false;
-					//put whatever you want to happen when you hit an object here
+					gameover = true;
 				}
 				if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-					//put whatever you want to happen when you hit an object here
+					cout << "here2" << endl;
+					gameover = true;
 					start = false;
-
 				}
 
 
@@ -223,13 +226,20 @@ void RenderGround()
 
 		}
 			}
-	if (track > 70) {
+	if (track > 70 && !mode2 && mode1) {
 		track = 0;
 		start = false;
 		mode2 = true;
 		mode1 = false;
+		
 	}
-
+	else {
+		if (track > 70 && mode2 && !mode1) {
+			cout << "hena ya behyma" << endl;
+			gameover = true;
+		}
+	}
+	
 
 
 	glPushMatrix();
@@ -520,44 +530,47 @@ void drawMinion()
 //=======================================================================
 void myDisplay(void)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	/*cout << xoffset;*/
-	// Draw Ground
-	RenderGround();
-	//Draw Character
-	glPushMatrix();
-	glTranslated(0, 4 + jumpOffset, 15);
-	glScaled(0.15, 0.15, 0.15);
-	drawMinion();
-	glPopMatrix();
-	
-	// Draw Tree Model
-	//glPushMatrix();
-	//glTranslatef(10, 0, 0);
-	//glScalef(0.7, 0.7, 0.7);
-	//model_tree.Draw();
-	//glPopMatrix();
+	if (!gameover) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		/*cout << xoffset;*/
+		// Draw Ground
+		RenderGround();
+		//Draw Character
+		glPushMatrix();
+		glTranslated(0, 4 + jumpOffset, 15);
+		glScaled(0.15, 0.15, 0.15);
+		drawMinion();
+		glPopMatrix();
 
-	//// Draw House Model
-	//glPushMatrix();
-	//glRotatef(90.f, 1, 0, 0);
-	//model_house.Draw();
-	//glPopMatrix();
-//	yJump = 4;
+		// Draw Tree Model
+		//glPushMatrix();
+		//glTranslatef(10, 0, 0);
+		//glScalef(0.7, 0.7, 0.7);
+		//model_tree.Draw();
+		//glPopMatrix();
 
-	glPushMatrix();
-	GLUquadricObj* qobj;
-	qobj = gluNewQuadric();
-	glTranslated(50, 0, 0);
-	glRotated(90, 1, 0, 1);
-	//glBindTexture(GL_TEXTURE_2D, tex);
-	gluQuadricTexture(qobj, true);
-	gluQuadricNormals(qobj, GL_SMOOTH);
-	gluSphere(qobj, 100, 100, 100);
-	gluDeleteQuadric(qobj);
-	glPopMatrix();
+		//// Draw House Model
+		//glPushMatrix();
+		//glRotatef(90.f, 1, 0, 0);
+		//model_house.Draw();
+		//glPopMatrix();
+	//	yJump = 4;
 
-	glutSwapBuffers();
+		glPushMatrix();
+		GLUquadricObj* qobj;
+		qobj = gluNewQuadric();
+		glTranslated(50, 0, 0);
+		glRotated(90, 1, 0, 1);
+		//glBindTexture(GL_TEXTURE_2D, tex);
+		gluQuadricTexture(qobj, true);
+		gluQuadricNormals(qobj, GL_SMOOTH);
+		gluSphere(qobj, 100, 100, 100);
+		gluDeleteQuadric(qobj);
+		glPopMatrix();
+
+		glutSwapBuffers();
+
+	}
 }
 
 //=======================================================================
@@ -590,12 +603,10 @@ void myKeyboard(unsigned char button, int x, int y)
 		glLoadIdentity();	//Clear Model_View Matrix
 		firstPerson = !firstPerson;
 		if (!firstPerson) {
-			cout << Eye3rd.x<< Eye3rd.y<< Eye3rd.z<< At3rd.x<< At3rd.y<< At3rd.z<< Up3rd.x<< Up3rd.y<< Up3rd.z << endl;
 			gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);
 			glutPostRedisplay();
 		}
 		else {
-			cout << EyeFps.x << EyeFps.y << EyeFps.z << AtFps.x << AtFps.y << AtFps.z << UpFps.x << UpFps.y << UpFps.z << endl;
 			gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
 			glutPostRedisplay();
 		}
@@ -615,6 +626,13 @@ void myKeyboard(unsigned char button, int x, int y)
 
 	case 'r':
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		break;
+	case 'n':
+		gameover = false;
+		track = 0;
+		mode2 = false;
+		mode1 = true;
+		start = false;
 		break;
 
 	case 27:
@@ -743,6 +761,7 @@ void LoadAssets()
 	/*	loadBMP(&tex, "Textures/sky.bmp", true)*/;
 
 }
+
 
 //=======================================================================
 // Main Function
