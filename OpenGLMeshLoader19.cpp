@@ -19,8 +19,12 @@ char title[] = "3D Model Loader Sample";
 //game variables
 bool start = false;
 bool jumping = false;
-int track = 0;
+float track = 0.0;
 float xoffset = 0;
+float camera = -2.0;
+float cameraC = 0.1;
+float offsetCounter = 0.1;
+float limitOffset = 0;
 float yJump = 4;
 float jumpOffset = 0.0;
 float jumpCounter = 1.0;
@@ -29,7 +33,7 @@ bool lane1 = true;
 GLdouble fovy = 45.0;
 GLdouble aspectRatio = (GLdouble)WIDTH / (GLdouble)HEIGHT;
 GLdouble zNear = 0.1;
-GLdouble zFar = 100;
+GLdouble zFar = 1000;
 
 //move arms & legs
 int angleArms = 0;
@@ -86,23 +90,39 @@ void InitLightSource()
 
 	// Enable Light Source number 0
 	// OpengL has 8 light sources
-	glEnable(GL_LIGHT0);
 
 	// Define Light source 0 ambient light
-	GLfloat ambient[] = { 0.1f, 0.1f, 0.1, 1.0f };
+	GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 0.0f };
 	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
 
-	// Define Light source 0 diffuse light
-	GLfloat diffuse[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+	//// Define Light source 0 diffuse light
+	GLfloat diffuse[] = { 0.7f, 0.7f, 0.7f, 1.0f };
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 
-	// Define Light source 0 Specular light
-	GLfloat specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+	//// Define Light source 0 Specular light
+	/*GLfloat specular[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);*/
 
-	// Finally, define light source 0 position in World Space
-	GLfloat light_position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
+	//// Finally, define light source 0 position in World Space
+	GLfloat light_position[] = { xoffset, 0.6f, -track, 0.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+	/*GLfloat ambient[] = { 0.7f, 0.7f, 0.7, 1.0f };
+	GLfloat diffuse[] = { 0.6f, 0.6f, 0.6, 1.0f };
+	GLfloat specular[] = { 1.0f, 1.0f, 1.0, 1.0f };
+	GLfloat shininess[] = { 60 };
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, shininess);
+	GLfloat light_position[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+
+	GLfloat lightIntensity[] = { 0.7f, 0.7f, 1, 1.0f };
+
+	glLightfv(GL_FRONT, GL_POSITION, light_position);
+	glLightfv(GL_FRONT, GL_DIFFUSE, lightIntensity);
+	glEnable(GL_LIGHT0);*/
+
 }
 
 //=======================================================================
@@ -159,7 +179,6 @@ void myInit(void)
 	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
 	//*******************************************************************************************//
 
-	InitLightSource();
 
 	InitMaterial();
 
@@ -173,7 +192,7 @@ void myInit(void)
 //=======================================================================
 void RenderGround()
 {
-	glDisable(GL_LIGHTING);	// Disable lighting 
+	//glDisable(GL_LIGHTING);	// Disable lighting 
 
 	if (mode1 && !mode2) glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 	else glColor3f(0.50, 0.72, 0.20);
@@ -184,20 +203,20 @@ void RenderGround()
 	}
 	else glBindTexture(GL_TEXTURE_2D, tex_groundMode2.texture[0]);
 	if (start) {
-		track += 1;
-		if (track % 7 == 0) {
-			int obstaclePos = track;
-			if (track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-				start = false;
-				//put whatever you want to happen when you hit an object here
+		track += 0.1;
+		if ((int)track % 7 == 0) {
+			float obstaclePos = track;
+			if ((int)track % 2==0 && !lane1 && track>= obstaclePos && track<= obstaclePos + 1) {
+				 start = false;
+				 //put whatever you want to happen when you hit an object here
 			}
-			if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+			if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
 				//put whatever you want to happen when you hit an object here
 				start = false;
 
-			}
+		}
 
-
+			
 		}
 	}
 	if (track > 70) {
@@ -350,7 +369,7 @@ void timerMoveLegs(int val)
 
 void drawMinion()
 {
-	glDisable(GL_LIGHTING);
+	//glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
 
@@ -469,6 +488,18 @@ void myDisplay(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	/*cout << xoffset;*/
+		//animation between lanes
+	if ((xoffset < limitOffset && offsetCounter>0) || (xoffset > limitOffset && offsetCounter < 0)) {
+		xoffset += offsetCounter;
+	}
+	camera += cameraC;
+	if (camera > 2) {
+		cameraC = -0.1;
+	}
+	else {
+		cameraC = 0.1;
+
+	}
 	// Draw Ground
 	RenderGround();
 	//Draw Character
@@ -503,6 +534,7 @@ void myDisplay(void)
 	gluSphere(qobj, 100, 100, 100);
 	gluDeleteQuadric(qobj);
 	glPopMatrix();
+	InitLightSource();
 
 	glutSwapBuffers();
 }
@@ -517,18 +549,22 @@ void myKeyboard(unsigned char button, int x, int y)
 	case 'u': {
 		jumping = true;
 	}
-			break;
+			  break;
 
 	case 'a': {
+		offsetCounter = 0.1;
 
-		xoffset = 0.28;
+		//xoffset = 0.28;
+		limitOffset = 0.28;
 		lane1 = true;
 	}
-			break;
+			  break;
 
 	case 'd':
 	{
-		xoffset = -6;
+		limitOffset = -6;
+		offsetCounter = -0.1;
+		//xoffset =-6;
 		lane1 = false;
 	}
 	break;
@@ -547,10 +583,10 @@ void myKeyboard(unsigned char button, int x, int y)
 			glutPostRedisplay();
 		}
 	}
-			break;
+			  break;
 	case 'j': {
 	}
-			break;
+			  break;
 
 	case ' ':
 		start = true;
@@ -723,10 +759,17 @@ void main(int argc, char** argv)
 
 	glutTimerFunc(0, timerMoveLegs, 1);
 
-
 	myInit();
 
+
 	LoadAssets();
+	glClearColor(1.0, 1.0, 0.0, 0.0);
+
+	glEnable(GL_LIGHT0);
+	//glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_LIGHTING);
+	
+	//glShadeModel(GL_SMOOTH);
 
 	glutMainLoop();
 }
