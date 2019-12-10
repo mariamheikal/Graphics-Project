@@ -19,7 +19,7 @@ char title[] = "3D Model Loader Sample";
 //game variables
 bool start = false;
 bool jumping = false;
-int track = 0.0;
+float track = 0.0;
 void collision();
 float xoffset = 0;
 float camera = -2.0;
@@ -124,9 +124,7 @@ void InitLightSource()
 	glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
 	glMaterialfv(GL_FRONT, GL_SHININESS, shininess);
 	GLfloat light_position[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-
 	GLfloat lightIntensity[] = { 0.7f, 0.7f, 1, 1.0f };
-
 	glLightfv(GL_FRONT, GL_POSITION, light_position);
 	glLightfv(GL_FRONT, GL_DIFFUSE, lightIntensity);
 	glEnable(GL_LIGHT0);*/
@@ -227,69 +225,9 @@ void RenderGround()
 	else glBindTexture(GL_TEXTURE_2D, tex_groundMode2.texture[0]);
 	if (start) {
 
-		track += 1;
+		track += 0.1;
 		score += 0.1;
-		//if (mode1) {
-		//	if ((int)track % 7 == 0) {
-		//		float obstaclePos = track;
-		//		if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-		//			start = false;
-		//			score -= 5.0;
-		//			lifes--;
-		//			offsetCounter = 0.1;
-		//			jumping = true;
-
-		//			//xoffset = 0.28;
-		//			limitOffset = 0.28;
-		//			lane1 = true;
-
-		//		}
-		//		if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-		//			start = false;
-		//			score -= 5.0;
-		//			lifes--;
-		//			jumping = true;
-
-		//			limitOffset = -6;
-		//			offsetCounter = -0.1;
-		//			//xoffset =-6;
-		//			lane1 = false;
-		//		}
-
-
-		//	}
-
-		//}
-		//else {
-		//	if ((int)track % 5 == 0) {
-		//		int obstaclePos = track;
-		//		if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-		//			start = false;
-		//			score -= 5.0;
-		//			lifes--;
-		//			offsetCounter = 0.1;
-		//			jumping = true;
-
-		//			//xoffset = 0.28;
-		//			limitOffset = 0.28;
-		//			lane1 = true;
-		//		}
-		//		if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-		//			start = false;
-		//			score -= 5.0;
-		//			lifes--;
-		//			jumping = true;
-
-		//			limitOffset = -6;
-		//			offsetCounter = -0.1;
-		//			//xoffset =-6;
-		//			lane1 = false;
-		//		}
-
-
-		//	}
-
-		//}
+		
 		collision();
 	}
 	if (track > 70 && !mode2 && mode1) {
@@ -491,42 +429,67 @@ void timerMoveLegs(int val)
 
 void collision() {
 	if (mode1) {
-			if (track % 7 == 0) {
-				int obstaclePos = track;
-				if (track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-					cout << "here here" << endl;
-					start = false;
-					//enter game over things here
-				}
-				if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-					cout << "here here 2" << endl;
-					start = false;
-					//enter game over things here
-				}
+		if ((int)track % 7 == 0) {
+			float obstaclePos = track;
+			if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1 && track > 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+				offsetCounter = 0.1;
+				jumping = true;
 
+				//xoffset = 0.28;
+				limitOffset = 0.28;
+				lane1 = true;
 
 			}
+			if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1 && track > 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+				jumping = true;
 
-		}
-		else {
-			if (track % 5 == 0) {
-				int obstaclePos = track;
-				if (track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-					cout << "here" << endl;
-					start = false;
-					//enter game over things here
-				}
-				if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-					cout << "here2" << endl;
-					//enter game over things here
-					start = false;
-				}
-
-
+				limitOffset = -6;
+				offsetCounter = -0.1;
+				//xoffset =-6;
+				lane1 = false;
 			}
 
 
 		}
+
+	}
+	else {
+		if ((int)track % 5 == 0) {
+			int obstaclePos = track;
+			if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1 && track > 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+				offsetCounter = 0.1;
+				jumping = true;
+
+				//xoffset = 0.28;
+				limitOffset = 0.28;
+				lane1 = true;
+			}
+			if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1 && track>1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+				jumping = true;
+
+				limitOffset = -6;
+				offsetCounter = -0.1;
+				//xoffset =-6;
+				lane1 = false;
+			}
+
+
+		}
+
+
+	}
 }
 
 void drawMinion()
@@ -652,7 +615,7 @@ void myDisplay(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		/*cout << xoffset;*/
 			//animation between lanes
-		if ((xoffset < limitOffset && offsetCounter>0) || (xoffset > limitOffset&& offsetCounter < 0)) {
+		if ((xoffset < limitOffset && offsetCounter>0) || (xoffset > limitOffset && offsetCounter < 0)) {
 			xoffset += offsetCounter;
 		}
 		camera += cameraC;
@@ -692,27 +655,24 @@ void myDisplay(void)
 
 		//print(10, 7, 0, "Score");
 		char* p0s[235];
-		sprintf((char*)p0s, "Score=%f", score);
+		sprintf((char*)p0s, "Score=%d", score);
 		print(firstPerson ? 7 : 10, firstPerson ? 5 : 7, (char*)p0s);
 		char* p1s[235];
 		sprintf((char*)p0s, "life:%d", lifes);
 		print(firstPerson ? 7 : 10, firstPerson ? 4 : 6, (char*)p1s);
 		glutSwapBuffers();
-		cout << "ay haga\n";
 	}
 	else {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		lifes = 0;
 		char* p0s[235];
-		sprintf((char*)p0s, "Score=%f", score);
+		sprintf((char*)p0s, "Score=%d", score);
 		print(-1, 0, (char*)p0s);
 		char* p1s[235];
 		sprintf((char*)p0s, "life:%d", lifes);
 		print(-1, 1, (char*)p1s);
 		print(-1, 2, "To play again press n");
 		glutSwapBuffers();
-		cout << "ay haga2\n";
 
 
 	}
@@ -729,7 +689,7 @@ void myKeyboard(unsigned char button, int x, int y)
 	case 'u': {
 		jumping = true;
 	}
-			break;
+			  break;
 
 	case 'a': {
 		offsetCounter = 0.1;
@@ -739,7 +699,7 @@ void myKeyboard(unsigned char button, int x, int y)
 		limitOffset = 0.28;
 		lane1 = true;
 	}
-			break;
+			  break;
 
 	case 'd':
 	{
@@ -768,10 +728,10 @@ void myKeyboard(unsigned char button, int x, int y)
 			glutPostRedisplay();
 		}
 	}
-			break;
+			  break;
 	case 'j': {
 	}
-			break;
+			  break;
 
 	case ' ':
 		start = true;
