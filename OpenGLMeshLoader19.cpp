@@ -19,7 +19,7 @@ char title[] = "3D Model Loader Sample";
 //game variables
 bool start = false;
 bool jumping = false;
-float track = 0.0;
+int track = 1;
 float xoffset = 0;
 float camera = -2.0;
 float cameraC = 0.1;
@@ -64,7 +64,7 @@ public:
 Vector Eye3rd(0, 5, 20);
 Vector At3rd(0, 0, 0);
 Vector Up3rd(0, 1, 0);
-Vector EyeFps(0,2.5, 14.5);
+Vector EyeFps(0, 2.5, 14.5);
 Vector AtFps(0, 0, 0);
 Vector UpFps(0, 1, 0);
 
@@ -243,15 +243,15 @@ void RenderGround()
 
 			}
 
-			
+
 		}
-			}
+	}
 	if (track > 70 && !mode2 && mode1) {
 		track = 0;
 		start = false;
 		mode2 = true;
 		mode1 = false;
-		
+
 	}
 	else {
 		if (track > 70 && mode2 && !mode1) {
@@ -259,7 +259,7 @@ void RenderGround()
 			gameover = true;
 		}
 	}
-	
+
 
 
 	glPushMatrix();
@@ -334,7 +334,7 @@ void RenderGround()
 			glEnd();
 		}
 	}
-	
+
 
 
 
@@ -554,7 +554,7 @@ void myDisplay(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	/*cout << xoffset;*/
 		//animation between lanes
-	if ((xoffset < limitOffset && offsetCounter>0) || (xoffset > limitOffset && offsetCounter < 0)) {
+	if ((xoffset < limitOffset && offsetCounter>0) || (xoffset > limitOffset&& offsetCounter < 0)) {
 		xoffset += offsetCounter;
 	}
 	camera += cameraC;
@@ -573,7 +573,7 @@ void myDisplay(void)
 	glScaled(0.15, 0.15, 0.15);
 	drawMinion();
 	glPopMatrix();
-	
+
 	// Draw Tree Model
 	//glPushMatrix();
 	//glTranslatef(10, 0, 0);
@@ -615,7 +615,7 @@ void myKeyboard(unsigned char button, int x, int y)
 	case 'u': {
 		jumping = true;
 	}
-			  break;
+			break;
 
 	case 'a': {
 		offsetCounter = 0.1;
@@ -624,7 +624,7 @@ void myKeyboard(unsigned char button, int x, int y)
 		limitOffset = 0.28;
 		lane1 = true;
 	}
-			  break;
+			break;
 
 	case 'd':
 	{
@@ -647,10 +647,10 @@ void myKeyboard(unsigned char button, int x, int y)
 			glutPostRedisplay();
 		}
 	}
-			  break;
+			break;
 	case 'j': {
 	}
-			  break;
+			break;
 
 	case ' ':
 		start = true;
@@ -726,9 +726,9 @@ void myMotion(int x, int y)
 
 	}
 	else {
-		 gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
+		gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
 	}
-	
+
 	GLfloat light_position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
@@ -840,7 +840,7 @@ void main(int argc, char** argv)
 	glEnable(GL_LIGHT0);
 	//glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_LIGHTING);
-	
+
 	//glShadeModel(GL_SMOOTH);
 
 	glutMainLoop();
