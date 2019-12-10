@@ -204,9 +204,6 @@ void RenderGround()
 	}
 	else glBindTexture(GL_TEXTURE_2D, tex_groundMode2.texture[0]);
 	if (start) {
-		if (mode2) {
-			track += 0.5;
-		}
 		track += 1;
 		if (mode1) {
 			if (track % 7 == 0) {
@@ -623,6 +620,7 @@ void myKeyboard(unsigned char button, int x, int y)
 		//xoffset = 0.28;
 		limitOffset = 0.28;
 		lane1 = true;
+		jumping = true;
 	}
 			break;
 
@@ -630,6 +628,7 @@ void myKeyboard(unsigned char button, int x, int y)
 	{
 		limitOffset = -6;
 		offsetCounter = -0.1;
+		jumping = true;
 		//xoffset =-6;
 		lane1 = false;
 	}
