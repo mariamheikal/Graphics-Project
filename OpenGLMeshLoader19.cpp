@@ -20,6 +20,7 @@ char title[] = "3D Model Loader Sample";
 bool start = false;
 bool jumping = false;
 float track = 0.0;
+void collision();
 float xoffset = 0;
 float camera = -2.0;
 float cameraC = 0.1;
@@ -123,9 +124,7 @@ void InitLightSource()
 	glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
 	glMaterialfv(GL_FRONT, GL_SHININESS, shininess);
 	GLfloat light_position[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-
 	GLfloat lightIntensity[] = { 0.7f, 0.7f, 1, 1.0f };
-
 	glLightfv(GL_FRONT, GL_POSITION, light_position);
 	glLightfv(GL_FRONT, GL_DIFFUSE, lightIntensity);
 	glEnable(GL_LIGHT0);*/
@@ -226,84 +225,25 @@ void RenderGround()
 	else glBindTexture(GL_TEXTURE_2D, tex_groundMode2.texture[0]);
 	if (start) {
 
-	track += 0.1;
-	score += 0.1;
-	if (mode1) {
-		if ((int)track % 7 == 0) {
-			float obstaclePos = track;
-			if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-				start = false;
-				score -= 5.0;
-				lifes--;
-				offsetCounter = 0.1;
-				jumping = true;
-
-				//xoffset = 0.28;
-				limitOffset = 0.28;
-				lane1 = true;
-				
-			}
-			if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-				start = false;
-				score -= 5.0;
-				lifes--;
-				jumping = true;
-
-				limitOffset = -6;
-				offsetCounter = -0.1;
-				//xoffset =-6;
-				lane1 = false;
-			}
-
-
-		}
+		track += 0.1;
+		score += 0.1;
+		
+		collision();
+	}
+	if (track > 70 && !mode2 && mode1) {
+		track = 0;
+		start = false;
+		mode2 = true;
+		mode1 = false;
 
 	}
 	else {
-		if ((int)track % 5 == 0) {
-			int obstaclePos = track;
-			if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-				start = false;
-				score -= 5.0;
-				lifes--;
-				offsetCounter = 0.1;
-				jumping = true;
-
-				//xoffset = 0.28;
-				limitOffset = 0.28;
-				lane1 = true;
-			}
-			if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-				start = false;
-				score -= 5.0;
-				lifes--;
-				jumping = true;
-
-				limitOffset = -6;
-				offsetCounter = -0.1;
-				//xoffset =-6;
-				lane1 = false;
-			}
-
-
+		if (track > 70 && mode2 && !mode1) {
+			gameOver = true;
 		}
-
 	}
-}
-if (track > 70 && !mode2 && mode1) {
-	track = 0;
-	start = false;
-	mode2 = true;
-	mode1 = false;
 
-}
-else {
-	if (track > 70 && mode2 && !mode1) {
-		gameOver = true;
-	}
-}
-
-	if (lifes==0) {
+	if (lifes == 0) {
 		gameOver = true;
 	}
 
@@ -330,30 +270,61 @@ else {
 		glBindTexture(GL_TEXTURE_2D, tex_obstacleMode1.texture[0]);	// Bind the ground texture
 	}
 	else glBindTexture(GL_TEXTURE_2D, tex_obstacleMode2.texture[0]);
-	for (int i = -7; i < 63; i += 7) {
-		float x1 = -2;
-		float x2 = 2;
-		float y1 = 0;
-		float y2 = 2;
-		float z1 = 0;
-		if (i % 2 == 0) {
-			x1 += 6;
-			x2 += 6;
-		}
+	if (mode1 & !mode2) {
+		//obstacles
+		for (int i = -7; i < 63; i += 7) {
+			float x1 = -2;
+			float x2 = 2;
+			float y1 = 0;
+			float y2 = 2;
+			float z1 = 0;
+			if (i % 2 == 0) {
+				x1 += 6;
+				x2 += 6;
+			}
 
-		//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
-		glBegin(GL_QUADS);
-		glNormal3f(0, 1, 0);	// Set quad normal direction.
-		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-		glVertex3f(x1, y1, z1 - i);
-		glTexCoord2f(0, 0.85);
-		glVertex3f(x2, y1, z1 - i);
-		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-		glVertex3f(x2, y2, z1 - i);
-		glTexCoord2f(0.5, 0);
-		glTexCoord2f(0, 0.85);
-		glVertex3f(x1, y2, z1 - i);
-		glEnd();
+			//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
+			glBegin(GL_QUADS);
+			glNormal3f(0, 1, 0);	// Set quad normal direction.
+			glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+			glVertex3f(x1, y1, z1 - i);
+			glTexCoord2f(0, 0.85);
+			glVertex3f(x2, y1, z1 - i);
+			glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+			glVertex3f(x2, y2, z1 - i);
+			glTexCoord2f(0.5, 0);
+			glTexCoord2f(0, 0.85);
+			glVertex3f(x1, y2, z1 - i);
+			glEnd();
+		}
+	}
+	else {
+		//obstacles
+		for (int i = -7; i < 63; i += 5) {
+			float x1 = -2;
+			float x2 = 2;
+			float y1 = 0;
+			float y2 = 2;
+			float z1 = 0;
+			if (i % 2 == 0) {
+				x1 += 6;
+				x2 += 6;
+			}
+
+			//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
+			glBegin(GL_QUADS);
+			glNormal3f(0, 1, 0);	// Set quad normal direction.
+			glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+			glVertex3f(x1, y1, z1 - i);
+			glTexCoord2f(0, 0.85);
+			glVertex3f(x2, y1, z1 - i);
+			glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+			glVertex3f(x2, y2, z1 - i);
+			glTexCoord2f(0.5, 0);
+			glTexCoord2f(0, 0.85);
+			glVertex3f(x1, y2, z1 - i);
+			glEnd();
+		}
 	}
 
 
@@ -454,6 +425,71 @@ void timerMoveLegs(int val)
 	}
 	glutPostRedisplay();
 	glutTimerFunc(30, timerMoveLegs, 1);
+}
+
+void collision() {
+	if (mode1) {
+		if ((int)track % 7 == 0) {
+			float obstaclePos = track;
+			if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1 && track > 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+				offsetCounter = 0.1;
+				jumping = true;
+
+				//xoffset = 0.28;
+				limitOffset = 0.28;
+				lane1 = true;
+
+			}
+			if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1 && track > 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+				jumping = true;
+
+				limitOffset = -6;
+				offsetCounter = -0.1;
+				//xoffset =-6;
+				lane1 = false;
+			}
+
+
+		}
+
+	}
+	else {
+		if ((int)track % 5 == 0) {
+			int obstaclePos = track;
+			if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1 && track > 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+				offsetCounter = 0.1;
+				jumping = true;
+
+				//xoffset = 0.28;
+				limitOffset = 0.28;
+				lane1 = true;
+			}
+			if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1 && track>1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+				jumping = true;
+
+				limitOffset = -6;
+				offsetCounter = -0.1;
+				//xoffset =-6;
+				lane1 = false;
+			}
+
+
+		}
+
+
+	}
 }
 
 void drawMinion()
@@ -619,27 +655,24 @@ void myDisplay(void)
 
 		//print(10, 7, 0, "Score");
 		char* p0s[235];
-		sprintf((char*)p0s, "Score=%f", score);
+		sprintf((char*)p0s, "Score=%d", score);
 		print(firstPerson ? 7 : 10, firstPerson ? 5 : 7, (char*)p0s);
 		char* p1s[235];
 		sprintf((char*)p0s, "life:%d", lifes);
 		print(firstPerson ? 7 : 10, firstPerson ? 4 : 6, (char*)p1s);
 		glutSwapBuffers();
-		cout << "ay haga\n";
 	}
 	else {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		lifes = 0;
 		char* p0s[235];
-		sprintf((char*)p0s, "Score=%f", score);
-		print(-1,0, (char*)p0s);
+		sprintf((char*)p0s, "Score=%d", score);
+		print(-1, 0, (char*)p0s);
 		char* p1s[235];
 		sprintf((char*)p0s, "life:%d", lifes);
-		print(-1,1, (char*)p1s);
-		print(-1, 2,"To play again press n");
+		print(-1, 1, (char*)p1s);
+		print(-1, 2, "To play again press n");
 		glutSwapBuffers();
-		cout << "ay haga2\n";
 
 
 	}
@@ -722,7 +755,7 @@ void myKeyboard(unsigned char button, int x, int y)
 		exit(0);
 		break;
 
-	default:		
+	default:
 
 		break;
 	}
@@ -892,7 +925,7 @@ void main(int argc, char** argv)
 	glEnable(GL_LIGHT0);
 	//glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_LIGHTING);
-	
+
 	//glShadeModel(GL_SMOOTH);
 
 	glutMainLoop();
