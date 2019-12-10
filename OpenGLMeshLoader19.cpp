@@ -1,5 +1,5 @@
+#include "TextureBuilder.h"
 #include "Model_3DS.h"
-//#include "TextureBuilder.h"
 #include "GLTexture.h"
 #include <iostream>
 #include <ctime>
@@ -29,6 +29,9 @@ float yJump = 4;
 float jumpOffset = 0.0;
 float jumpCounter = 1.0;
 bool lane1 = true;
+float score = 0;
+int lifes = 5;
+bool gameOver;
 // 3D Projection Options
 GLdouble fovy = 45.0;
 GLdouble aspectRatio = (GLdouble)WIDTH / (GLdouble)HEIGHT;
@@ -79,7 +82,11 @@ GLTexture tex_groundMode1;
 GLTexture tex_groundMode2;
 GLTexture tex_jeans;
 GLTexture tex_jeansMode2;
+GLTexture tex_obstacleMode1;
+GLTexture tex_obstacleMode2;
 //GLuint tex;
+GLuint tex;
+
 //=======================================================================
 // Lighting Configuration Function
 //=======================================================================
@@ -124,6 +131,21 @@ void InitLightSource()
 	glEnable(GL_LIGHT0);*/
 
 }
+void print(float x, float y, char* string)
+{
+	int len, i;
+
+	//set the position of the text in the window using the x and y coordinates
+	glRasterPos2d(x, y);
+	//get the length of the string to display
+	len = (int)strlen(string);
+
+	//loop to display character by character
+	for (i = 0; i < len; i++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+	}
+}
 
 //=======================================================================
 // Material Configuration Function
@@ -151,7 +173,7 @@ void InitMaterial()
 //=======================================================================
 void myInit(void)
 {
-	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClearColor(1, 1, 1, 0.0);
 
 	glMatrixMode(GL_PROJECTION);
 
@@ -203,29 +225,62 @@ void RenderGround()
 	}
 	else glBindTexture(GL_TEXTURE_2D, tex_groundMode2.texture[0]);
 	if (start) {
-		track += 0.1;
+
+	track += 0.1;
+	score += 0.1;
+	if (mode1) {
 		if ((int)track % 7 == 0) {
 			float obstaclePos = track;
-			if ((int)track % 2==0 && !lane1 && track>= obstaclePos && track<= obstaclePos + 1) {
-				 start = false;
-				 //put whatever you want to happen when you hit an object here
+			if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
 			}
 			if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-				//put whatever you want to happen when you hit an object here
 				start = false;
+				score -= 5.0;
+				lifes--;
+			}
+
 
 		}
 
-			
-		}
 	}
-	if (track > 70) {
-		track = 0;
-		start = false;
-		mode2 = true;
-		mode1 = false;
-	}
+	else {
+		if ((int)track % 5 == 0) {
+			int obstaclePos = track;
+			if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+			}
+			if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+			}
 
+
+		}
+
+	}
+}
+if (track > 70 && !mode2 && mode1) {
+	track = 0;
+	start = false;
+	mode2 = true;
+	mode1 = false;
+
+}
+else {
+	if (track > 70 && mode2 && !mode1) {
+		gameOver = true;
+	}
+}
+
+	if (lifes==0) {
+		gameOver = true;
+	}
 
 
 	glPushMatrix();
@@ -246,6 +301,10 @@ void RenderGround()
 	glEnd();
 
 	//obstacles
+	if (mode1 && !mode2) {
+		glBindTexture(GL_TEXTURE_2D, tex_obstacleMode1.texture[0]);	// Bind the ground texture
+	}
+	else glBindTexture(GL_TEXTURE_2D, tex_obstacleMode2.texture[0]);
 	for (int i = -7; i < 63; i += 7) {
 		float x1 = -2;
 		float x2 = 2;
@@ -272,6 +331,11 @@ void RenderGround()
 		glEnd();
 	}
 
+
+	if (mode1 && !mode2) {
+		glBindTexture(GL_TEXTURE_2D, tex_groundMode1.texture[0]);	// Bind the ground texture
+	}
+	else glBindTexture(GL_TEXTURE_2D, tex_groundMode2.texture[0]);
 
 
 	//Part 1 of lane 2
@@ -486,57 +550,75 @@ void drawMinion()
 //=======================================================================
 void myDisplay(void)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	/*cout << xoffset;*/
-		//animation between lanes
-	if ((xoffset < limitOffset && offsetCounter>0) || (xoffset > limitOffset && offsetCounter < 0)) {
-		xoffset += offsetCounter;
-	}
-	camera += cameraC;
-	if (camera > 2) {
-		cameraC = -0.1;
+	if (!gameOver) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		/*cout << xoffset;*/
+			//animation between lanes
+		if ((xoffset < limitOffset && offsetCounter>0) || (xoffset > limitOffset && offsetCounter < 0)) {
+			xoffset += offsetCounter;
+		}
+		camera += cameraC;
+		if (camera > 2) {
+			cameraC = -0.1;
+		}
+		else {
+			cameraC = 0.1;
+
+		}
+		// Draw Ground
+		RenderGround();
+		//Draw Character
+		glPushMatrix();
+		glTranslated(0, 4.0 + jumpOffset, 15);
+		glScaled(0.15, 0.15, 0.15);
+		drawMinion();
+		glPopMatrix();
+
+		glEnable(GL_TEXTURE_2D);
+		glColor3d(1, 1, 1);
+
+		glPushMatrix();
+		GLUquadricObj* qobj;
+		qobj = gluNewQuadric();
+		glTranslated(10, 0, 50);
+		glRotated(90, 1, 0, 1);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		gluQuadricTexture(qobj, true);
+		gluQuadricNormals(qobj, GL_SMOOTH);
+		gluSphere(qobj, 100, 100, 100);
+		gluDeleteQuadric(qobj);
+		glPopMatrix();
+
+		InitLightSource();
+		glColor3f(1, 0, 1);
+
+		//print(10, 7, 0, "Score");
+		char* p0s[235];
+		sprintf((char*)p0s, "Score=%f", score);
+		print(firstPerson ? 7 : 10, firstPerson ? 5 : 7, (char*)p0s);
+		char* p1s[235];
+		sprintf((char*)p0s, "life:%d", lifes);
+		print(firstPerson ? 7 : 10, firstPerson ? 4 : 6, (char*)p1s);
+		glutSwapBuffers();
+		cout << "ay haga\n";
 	}
 	else {
-		cameraC = 0.1;
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		lifes = 0;
+		char* p0s[235];
+		sprintf((char*)p0s, "Score=%f", score);
+		print(-1,0, (char*)p0s);
+		char* p1s[235];
+		sprintf((char*)p0s, "life:%d", lifes);
+		print(-1,1, (char*)p1s);
+		print(-1, 2,"To play again press n");
+		glutSwapBuffers();
+		cout << "ay haga2\n";
+
 
 	}
-	// Draw Ground
-	RenderGround();
-	//Draw Character
-	glPushMatrix();
-	glTranslated(0, 4 + jumpOffset, 15);
-	glScaled(0.15, 0.15, 0.15);
-	drawMinion();
-	glPopMatrix();
 
-	// Draw Tree Model
-	//glPushMatrix();
-	//glTranslatef(10, 0, 0);
-	//glScalef(0.7, 0.7, 0.7);
-	//model_tree.Draw();
-	//glPopMatrix();
-
-	//// Draw House Model
-	//glPushMatrix();
-	//glRotatef(90.f, 1, 0, 0);
-	//model_house.Draw();
-	//glPopMatrix();
-//	yJump = 4;
-
-	glPushMatrix();
-	GLUquadricObj* qobj;
-	qobj = gluNewQuadric();
-	glTranslated(50, 0, 0);
-	glRotated(90, 1, 0, 1);
-	//glBindTexture(GL_TEXTURE_2D, tex);
-	gluQuadricTexture(qobj, true);
-	gluQuadricNormals(qobj, GL_SMOOTH);
-	gluSphere(qobj, 100, 100, 100);
-	gluDeleteQuadric(qobj);
-	glPopMatrix();
-	InitLightSource();
-
-	glutSwapBuffers();
 }
 
 //=======================================================================
@@ -553,6 +635,7 @@ void myKeyboard(unsigned char button, int x, int y)
 
 	case 'a': {
 		offsetCounter = 0.1;
+		jumping = true;
 
 		//xoffset = 0.28;
 		limitOffset = 0.28;
@@ -562,6 +645,8 @@ void myKeyboard(unsigned char button, int x, int y)
 
 	case 'd':
 	{
+		jumping = true;
+
 		limitOffset = -6;
 		offsetCounter = -0.1;
 		//xoffset =-6;
@@ -573,12 +658,14 @@ void myKeyboard(unsigned char button, int x, int y)
 		glLoadIdentity();	//Clear Model_View Matrix
 		firstPerson = !firstPerson;
 		if (!firstPerson) {
-			cout << Eye3rd.x << Eye3rd.y << Eye3rd.z << At3rd.x << At3rd.y << At3rd.z << Up3rd.x << Up3rd.y << Up3rd.z << endl;
+			//cout << Eye3rd.x << Eye3rd.y << Eye3rd.z << At3rd.x << At3rd.y << At3rd.z << Up3rd.x << Up3rd.y << Up3rd.z << endl;
+			//cout << "hi" << Eye3rd.x << '\n' << Eye3rd.y << '\n' << Eye3rd.z << '\n';
+
 			gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);
 			glutPostRedisplay();
 		}
 		else {
-			cout << EyeFps.x << EyeFps.y << EyeFps.z << AtFps.x << AtFps.y << AtFps.z << UpFps.x << UpFps.y << UpFps.z << endl;
+			//cout << EyeFps.x << EyeFps.y << EyeFps.z << AtFps.x << AtFps.y << AtFps.z << UpFps.x << UpFps.y << UpFps.z << endl;
 			gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
 			glutPostRedisplay();
 		}
@@ -592,8 +679,14 @@ void myKeyboard(unsigned char button, int x, int y)
 		start = true;
 		break;
 
-	case 'w':
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	case 'n':
+		gameOver = false;
+		track = 0;
+		mode2 = false;
+		mode1 = true;
+		start = false;
+		lifes = 5;
+		score = 0;
 		break;
 
 	case 'r':
@@ -604,7 +697,8 @@ void myKeyboard(unsigned char button, int x, int y)
 		exit(0);
 		break;
 
-	default:
+	default:		
+
 		break;
 	}
 	glutPostRedisplay();
@@ -677,6 +771,7 @@ void myMouse(int button, int state, int x, int y)
 	}
 }
 
+
 //=======================================================================
 // Reshape Function
 //=======================================================================
@@ -707,6 +802,9 @@ void myReshape(int w, int h)
 	else {
 		gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
 	}
+
+
+	//render_score();
 }
 
 //=======================================================================
@@ -721,9 +819,11 @@ void LoadAssets()
 	// Loading texture files
 	tex_groundMode1.Load("Textures/ground.bmp");
 	tex_groundMode2.Load("Textures/grass.bmp");
+	tex_obstacleMode1.Load("Textures/obstacleMode2.bmp");
+	tex_obstacleMode2.Load("Textures/obstacleMode1.bmp");
 	tex_jeans.Load("Textures/jeans.bmp");
 	tex_jeansMode2.Load("Textures/jeansMode2.bmp");
-	/*	loadBMP(&tex, "Textures/sky.bmp", true)*/;
+	loadBMP(&tex, "Textures/sky.bmp", true);
 
 }
 
@@ -763,7 +863,6 @@ void main(int argc, char** argv)
 
 
 	LoadAssets();
-	glClearColor(1.0, 1.0, 0.0, 0.0);
 
 	glEnable(GL_LIGHT0);
 	//glEnable(GL_DEPTH_TEST);
