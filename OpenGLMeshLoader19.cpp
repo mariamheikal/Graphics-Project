@@ -29,6 +29,7 @@ float yJump = 4;
 float jumpOffset = 0.0;
 float jumpCounter = 1.0;
 bool lane1 = true;
+bool gameover = false;
 // 3D Projection Options
 GLdouble fovy = 45.0;
 GLdouble aspectRatio = (GLdouble)WIDTH / (GLdouble)HEIGHT;
@@ -203,29 +204,62 @@ void RenderGround()
 	}
 	else glBindTexture(GL_TEXTURE_2D, tex_groundMode2.texture[0]);
 	if (start) {
-		track += 0.1;
-		if ((int)track % 7 == 0) {
-			float obstaclePos = track;
-			if ((int)track % 2==0 && !lane1 && track>= obstaclePos && track<= obstaclePos + 1) {
-				 start = false;
-				 //put whatever you want to happen when you hit an object here
+		if (mode2) {
+			track += 0.5;
+		}
+		track += 1;
+		if (mode1) {
+			if (track % 7 == 0) {
+				int obstaclePos = track;
+				if (track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+					cout << "here here" << endl;
+					start = false;
+					gameover = true;
+				}
+				if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+					cout << "here here 2" << endl;
+					start = false;
+					gameover = true;
+				}
+
+
 			}
-			if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-				//put whatever you want to happen when you hit an object here
-				start = false;
 
 		}
+		else {
+			if (track % 5 == 0) {
+				int obstaclePos = track;
+				if (track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+					cout << "here" << endl;
+					start = false;
+					gameover = true;
+				}
+				if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+					cout << "here2" << endl;
+					gameover = true;
+					start = false;
+				}
+
+
+			}
 
 			
 		}
-	}
-	if (track > 70) {
+			}
+	if (track > 70 && !mode2 && mode1) {
 		track = 0;
 		start = false;
 		mode2 = true;
 		mode1 = false;
+		
 	}
-
+	else {
+		if (track > 70 && mode2 && !mode1) {
+			cout << "hena ya behyma" << endl;
+			gameover = true;
+		}
+	}
+	
 
 
 	glPushMatrix();
@@ -244,33 +278,63 @@ void RenderGround()
 	glTexCoord2f(0, 0.85);
 	glVertex3f(-2, 0, 20);
 	glEnd();
+	if (mode1 & !mode2) {
+		//obstacles
+		for (int i = -7; i < 63; i += 7) {
+			float x1 = -2;
+			float x2 = 2;
+			float y1 = 0;
+			float y2 = 2;
+			float z1 = 0;
+			if (i % 2 == 0) {
+				x1 += 6;
+				x2 += 6;
+			}
 
-	//obstacles
-	for (int i = -7; i < 63; i += 7) {
-		float x1 = -2;
-		float x2 = 2;
-		float y1 = 0;
-		float y2 = 2;
-		float z1 = 0;
-		if (i % 2 == 0) {
-			x1 += 6;
-			x2 += 6;
+			//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
+			glBegin(GL_QUADS);
+			glNormal3f(0, 1, 0);	// Set quad normal direction.
+			glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+			glVertex3f(x1, y1, z1 - i);
+			glTexCoord2f(0, 0.85);
+			glVertex3f(x2, y1, z1 - i);
+			glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+			glVertex3f(x2, y2, z1 - i);
+			glTexCoord2f(0.5, 0);
+			glTexCoord2f(0, 0.85);
+			glVertex3f(x1, y2, z1 - i);
+			glEnd();
 		}
-
-		//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
-		glBegin(GL_QUADS);
-		glNormal3f(0, 1, 0);	// Set quad normal direction.
-		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-		glVertex3f(x1, y1, z1 - i);
-		glTexCoord2f(0, 0.85);
-		glVertex3f(x2, y1, z1 - i);
-		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-		glVertex3f(x2, y2, z1 - i);
-		glTexCoord2f(0.5, 0);
-		glTexCoord2f(0, 0.85);
-		glVertex3f(x1, y2, z1 - i);
-		glEnd();
 	}
+	else {
+		//obstacles
+		for (int i = -7; i < 63; i += 5) {
+			float x1 = -2;
+			float x2 = 2;
+			float y1 = 0;
+			float y2 = 2;
+			float z1 = 0;
+			if (i % 2 == 0) {
+				x1 += 6;
+				x2 += 6;
+			}
+
+			//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
+			glBegin(GL_QUADS);
+			glNormal3f(0, 1, 0);	// Set quad normal direction.
+			glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+			glVertex3f(x1, y1, z1 - i);
+			glTexCoord2f(0, 0.85);
+			glVertex3f(x2, y1, z1 - i);
+			glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+			glVertex3f(x2, y2, z1 - i);
+			glTexCoord2f(0.5, 0);
+			glTexCoord2f(0, 0.85);
+			glVertex3f(x1, y2, z1 - i);
+			glEnd();
+		}
+	}
+	
 
 
 
@@ -486,6 +550,7 @@ void drawMinion()
 //=======================================================================
 void myDisplay(void)
 {
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	/*cout << xoffset;*/
 		//animation between lanes
@@ -537,6 +602,7 @@ void myDisplay(void)
 	InitLightSource();
 
 	glutSwapBuffers();
+
 }
 
 //=======================================================================
@@ -573,12 +639,10 @@ void myKeyboard(unsigned char button, int x, int y)
 		glLoadIdentity();	//Clear Model_View Matrix
 		firstPerson = !firstPerson;
 		if (!firstPerson) {
-			cout << Eye3rd.x<< Eye3rd.y<< Eye3rd.z<< At3rd.x<< At3rd.y<< At3rd.z<< Up3rd.x<< Up3rd.y<< Up3rd.z << endl;
 			gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);
 			glutPostRedisplay();
 		}
 		else {
-			cout << EyeFps.x << EyeFps.y << EyeFps.z << AtFps.x << AtFps.y << AtFps.z << UpFps.x << UpFps.y << UpFps.z << endl;
 			gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
 			glutPostRedisplay();
 		}
@@ -598,6 +662,13 @@ void myKeyboard(unsigned char button, int x, int y)
 
 	case 'r':
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		break;
+	case 'n':
+		gameover = false;
+		track = 0;
+		mode2 = false;
+		mode1 = true;
+		start = false;
 		break;
 
 	case 27:
@@ -726,6 +797,7 @@ void LoadAssets()
 	/*	loadBMP(&tex, "Textures/sky.bmp", true)*/;
 
 }
+
 
 //=======================================================================
 // Main Function
