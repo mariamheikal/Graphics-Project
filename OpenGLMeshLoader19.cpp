@@ -19,7 +19,7 @@ char title[] = "3D Model Loader Sample";
 //game variables
 bool start = false;
 bool jumping = false;
-int track = 0.0;
+float track = 0.0;
 float xoffset = 0;
 float camera = -2.0;
 float cameraC = 0.1;
@@ -30,7 +30,7 @@ float jumpOffset = 0.0;
 float jumpCounter = 1.0;
 bool lane1 = true;
 float score = 0;
-int lifes = 50;
+int lifes = 5;
 bool gameOver;
 // 3D Projection Options
 GLdouble fovy = 45.0;
@@ -226,677 +226,674 @@ void RenderGround()
 	else glBindTexture(GL_TEXTURE_2D, tex_groundMode2.texture[0]);
 	if (start) {
 
-		track += 1.0;
-		score += 0.1;
-		if (mode1) {
-			if (track % 7 == 0) {
-				float obstaclePos = track;
-				if (track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-					start = false;
-					score -= 5.0;
-					lifes--;
-					cout << "1 track at" << track << endl;
-				}
-				if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-					start = false;
-					score -= 5.0;
-					lifes--;
+	track += 0.1;
+	score += 0.1;
+	if (mode1) {
+		if ((int)track % 7 == 0) {
+			float obstaclePos = track;
+			if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+				offsetCounter = 0.1;
+				jumping = true;
 
-					cout << "2 track at" << track << endl;
-				}
-
-
+				//xoffset = 0.28;
+				limitOffset = 0.28;
+				lane1 = true;
+				
 			}
-		}
-		else {
-			if (track % 5 == 0) {
-				int obstaclePos = track;
-				if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-					start = false;
-					score -= 5.0;
-					lifes--;
+			if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+				jumping = true;
 
-					cout << "3 track at" << track << endl;
-				}
-				if (track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
-					start = false;
-					score -= 5.0;
-					lifes--;
-
-					cout << "4 track at" << track << endl;
-				}
-
-
+				limitOffset = -6;
+				offsetCounter = -0.1;
+				//xoffset =-6;
+				lane1 = false;
 			}
 
-		}
-		}
-		if (track > 70 && !mode2 && mode1) {
-			track = 0;
-			start = false;
-			mode2 = true;
-			mode1 = false;
 
 		}
-		else {
-			if (track > 70 && mode2 && !mode1) {
-				gameOver = true;
+
+	}
+	else {
+		if ((int)track % 5 == 0) {
+			int obstaclePos = track;
+			if ((int)track % 2 == 0 && !lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+				offsetCounter = 0.1;
+				jumping = true;
+
+				//xoffset = 0.28;
+				limitOffset = 0.28;
+				lane1 = true;
 			}
+			if ((int)track % 2 != 0 && lane1 && track >= obstaclePos && track <= obstaclePos + 1) {
+				start = false;
+				score -= 5.0;
+				lifes--;
+				jumping = true;
+
+				limitOffset = -6;
+				offsetCounter = -0.1;
+				//xoffset =-6;
+				lane1 = false;
+			}
+
+
 		}
 
-		if (lifes == 0) {
-			gameOver = true;
+	}
+}
+if (track > 70 && !mode2 && mode1) {
+	track = 0;
+	start = false;
+	mode2 = true;
+	mode1 = false;
+
+}
+else {
+	if (track > 70 && mode2 && !mode1) {
+		gameOver = true;
+	}
+}
+
+	if (lifes==0) {
+		gameOver = true;
+	}
+
+
+	glPushMatrix();
+
+	//Part 1 of lane 1
+	glTranslatef(0.0, 0.0, track);
+	glTranslatef(xoffset, 0.0, 0.0);
+	glBegin(GL_QUADS);
+	glNormal3f(0, 1, 0);	// Set quad normal direction.
+	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+	glVertex3f(-2, 0, -50);
+	glTexCoord2f(0.5, 0);
+	glVertex3f(2, 0, -50);
+	glTexCoord2f(0.85, 0.85);
+	glVertex3f(2, 0, 20);
+	glTexCoord2f(0, 0.85);
+	glVertex3f(-2, 0, 20);
+	glEnd();
+
+	//obstacles
+	if (mode1 && !mode2) {
+		glBindTexture(GL_TEXTURE_2D, tex_obstacleMode1.texture[0]);	// Bind the ground texture
+	}
+	else glBindTexture(GL_TEXTURE_2D, tex_obstacleMode2.texture[0]);
+	for (int i = -7; i < 63; i += 7) {
+		float x1 = -2;
+		float x2 = 2;
+		float y1 = 0;
+		float y2 = 2;
+		float z1 = 0;
+		if (i % 2 == 0) {
+			x1 += 6;
+			x2 += 6;
 		}
 
-
-		glPushMatrix();
-
-		//Part 1 of lane 1
-		glTranslatef(0.0, 0.0, track);
-		glTranslatef(xoffset, 0.0, 0.0);
+		//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
 		glBegin(GL_QUADS);
 		glNormal3f(0, 1, 0);	// Set quad normal direction.
 		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-		glVertex3f(-2, 0, -50);
+		glVertex3f(x1, y1, z1 - i);
+		glTexCoord2f(0, 0.85);
+		glVertex3f(x2, y1, z1 - i);
+		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+		glVertex3f(x2, y2, z1 - i);
 		glTexCoord2f(0.5, 0);
-		glVertex3f(2, 0, -50);
-		glTexCoord2f(0.85, 0.85);
-		glVertex3f(2, 0, 20);
 		glTexCoord2f(0, 0.85);
-		glVertex3f(-2, 0, 20);
+		glVertex3f(x1, y2, z1 - i);
 		glEnd();
-		if (mode1 & !mode2) {
-			//obstacles
-			for (int i = -7; i < 63; i += 7) {
-				float x1 = -2;
-				float x2 = 2;
-				float y1 = 0;
-				float y2 = 2;
-				float z1 = 0;
-				if (i % 2 == 0) {
-					x1 += 6;
-					x2 += 6;
-				}
+	}
 
-				//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
-				glBegin(GL_QUADS);
-				glNormal3f(0, 1, 0);	// Set quad normal direction.
-				glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-				glVertex3f(x1, y1, z1 - i);
-				glTexCoord2f(0, 0.85);
-				glVertex3f(x2, y1, z1 - i);
-				glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-				glVertex3f(x2, y2, z1 - i);
-				glTexCoord2f(0.5, 0);
-				glTexCoord2f(0, 0.85);
-				glVertex3f(x1, y2, z1 - i);
-				glEnd();
-			}
+
+	if (mode1 && !mode2) {
+		glBindTexture(GL_TEXTURE_2D, tex_groundMode1.texture[0]);	// Bind the ground texture
+	}
+	else glBindTexture(GL_TEXTURE_2D, tex_groundMode2.texture[0]);
+
+
+	//Part 1 of lane 2
+	glTranslatef(6.0, 0.0, 0.0);
+
+	glBegin(GL_QUADS);
+	glNormal3f(0, 1, 0);	// Set quad normal direction.
+	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+	glVertex3f(-2, 0, -50);
+	glTexCoord2f(0.85, 0);
+	glVertex3f(2, 0, -50);
+	glTexCoord2f(0.85, 0.85);
+	glVertex3f(2, 0, 20);
+	glTexCoord2f(0, 0.85);
+	glVertex3f(-2, 0, 20);
+	glEnd();
+
+	//Part 2 of lane 1
+	glTranslatef(-6.0, 0.0, -70.0);
+
+	glBegin(GL_QUADS);
+	glNormal3f(0, 1, 0);	// Set quad normal direction.
+	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+	glVertex3f(-2, 0, -50);
+	glTexCoord2f(0.85, 0);
+	glVertex3f(2, 0, -50);
+	glTexCoord2f(0.85, 0.85);
+	glVertex3f(2, 0, 20);
+	glTexCoord2f(0, 0.85);
+	glVertex3f(-2, 0, 20);
+	glEnd();
+
+	//Part 2 of lane 2
+	glTranslatef(6.0, 0.0, 0.0);
+
+	glBegin(GL_QUADS);
+	glNormal3f(0, 1, 0);	// Set quad normal direction.
+	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+	glVertex3f(-2, 0, -50);
+	glTexCoord2f(0.85, 0);
+	glVertex3f(2, 0, -50);
+	glTexCoord2f(0.85, 0.85);
+	glVertex3f(2, 0, 20);
+	glTexCoord2f(0, 0.85);
+	glVertex3f(-2, 0, 20);
+	glEnd();
+
+	glPopMatrix();
+
+
+	glEnable(GL_LIGHTING);	// Enable lighting again for other entites coming throung the pipeline.
+	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
+	glDisable(GL_TEXTURE_2D);
+
+}
+
+
+void timerMoveArms(int val)
+{
+	int x = angleArms;
+	if (x == -85) upArms = true;
+	if (x < 85 && upArms) {
+		angleArms += 5;
+	}
+	if (x >= 85 || !upArms) {
+		upArms = false;
+		if (x > -85)
+		{
+			angleArms -= 5;
+		}
+	}
+	glutPostRedisplay();
+	glutTimerFunc(30, timerMoveArms, 1);
+}
+
+
+
+void timerMoveLegs(int val)
+{
+	int x = angleLegs;
+	if (x == -50) upLegs = true;
+	if (x < 50 && upLegs) {
+		angleLegs += 5;
+	}
+	if (x >= 50 || !upLegs) {
+		upLegs = false;
+		if (x > -50)
+		{
+			angleLegs -= 5;
+		}
+	}
+	glutPostRedisplay();
+	glutTimerFunc(30, timerMoveLegs, 1);
+}
+
+void drawMinion()
+{
+	//glDisable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+
+
+
+	GLUquadricObj* quadratic;
+	quadratic = gluNewQuadric();
+
+	GLUquadricObj* quadraticJeans;
+	quadraticJeans = gluNewQuadric();
+	gluQuadricTexture(quadraticJeans, GL_TRUE);
+
+
+
+
+	glPushMatrix();
+	//editing
+	glTranslated(0, -10, 0);
+	glScaled(400, 150, 400);
+	glRotated(-45, 0, 1, 0);
+	//CLOTHES
+	if (mode1 && !mode2) glBindTexture(GL_TEXTURE_2D, tex_jeans.texture[0]);
+	else glBindTexture(GL_TEXTURE_2D, tex_jeansMode2.texture[0]);
+	glPushMatrix();
+	glTranslated(0, -0.017, 0);
+	glRotated(90, 0, 1, 0);
+	glRotated(90, 1, 0, 0);
+	if (mode1 && !mode2) glColor3f(0.33, 0.33, 0.33);
+	else glColor3f(0.45, 0.63, 0.76);
+	gluCylinder(quadraticJeans, 0.005, 0.005, 0.02, 300, 300);
+	glPopMatrix();
+	glPushMatrix();
+	glTranslated(0, -0.037, 0);
+	gluSphere(quadraticJeans, 0.005, 300, 300);
+	glPopMatrix();
+
+	//LEGS
+	glPushMatrix();//left
+	glTranslated(-0.002, -0.043, 0);
+	glRotated(-45, 0, 1, 0);
+	glRotated(angleLegs, 0, 0, 1);
+	glRotated(90, 1, 0, 0);
+	gluCylinder(quadraticJeans, 0.001, 0.001, 0.01, 300, 300);
+	glPopMatrix();
+	glPushMatrix();//right
+	if (mode1 && !mode2) glColor3f(0.33, 0.33, 0.33);
+	else glColor3f(0.45, 0.63, 0.76);
+	glTranslated(0.0008, -0.043, -0.0017);
+	glRotated(-45, 0, 1, 0);
+	glRotated(-angleLegs, 0, 0, 1);
+	glRotated(90, 1, 0, 0);
+	gluCylinder(quadraticJeans, 0.001, 0.001, 0.01, 300, 300);
+	glPopMatrix();
+
+	glDisable(GL_TEXTURE_2D);
+	//HEAD
+	glPushMatrix();
+	if (mode1 && !mode2) glColor3ub(144, 94, 173);
+	else glColor3ub(252, 224, 41);
+	gluSphere(quadratic, 0.0005, 30, 30);
+	glPopMatrix();
+	//FACE
+	glPushMatrix();
+	glRotated(90, 0, 1, 0);
+	glRotated(90, 1, 0, 0);
+	gluCylinder(quadratic, 0.005, 0.005, 0.017, 300, 300);
+	glPopMatrix();
+	//ARMS
+	glPushMatrix();//left
+	glTranslated(0, -0.012, 0.008);
+	glRotated(-45, 0, 1, 0);
+	glRotated(-angleArms, 0, 0, 1);
+	glRotated(90, 1, 0, 0);
+	gluCylinder(quadratic, 0.001, 0.001, 0.01, 300, 300);
+	glPopMatrix();
+	glPushMatrix();//right
+	glTranslated(0.008, -0.012, 0);
+	glRotated(-45, 0, 1, 0);
+	glRotated(angleArms, 0, 0, 1);
+	glRotated(90, 1, 0, 0);
+	gluCylinder(quadratic, 0.001, 0.001, 0.01, 300, 300);
+	glPopMatrix();
+	//GOGGLES
+	glPushMatrix();
+	if (mode1 && !mode2) glColor3f(0, 0, 0);
+	else glColor3ub(10, 117, 188);
+	glTranslated(0, -0.0045, 0);
+	glRotated(90, 0, 1, 0);
+	glRotated(90, 1, 0, 0);
+	gluCylinder(quadratic, 0.005005, 0.005005, 0.0025, 300, 300);
+	glPopMatrix();
+	//HAIR
+	glColor3f(0, 0, 0);
+	glPushMatrix();
+	glBegin(GL_LINES);
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 0.01, 0);
+	glVertex3f(0.002, 0, 0);
+	glVertex3f(0.001, 0.01, 0);
+	glVertex3f(-0.002, 0, 0);
+	glVertex3f(-0.001, 0.01, 0);
+	glVertex3f(0, 0, 0.001);
+	glVertex3f(0, 0.01, 0.002);
+	glVertex3f(0.002, 0, 0);
+	glVertex3f(0.002, 0.01, 0);
+	glEnd();
+	glPopMatrix();
+
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING);
+}
+//=======================================================================
+// Display Function
+//=======================================================================
+void myDisplay(void)
+{
+	if (!gameOver) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		/*cout << xoffset;*/
+			//animation between lanes
+		if ((xoffset < limitOffset && offsetCounter>0) || (xoffset > limitOffset && offsetCounter < 0)) {
+			xoffset += offsetCounter;
+		}
+		camera += cameraC;
+		if (camera > 2) {
+			cameraC = -0.1;
 		}
 		else {
-			//obstacles
-			for (int i = -7; i < 63; i += 5) {
-				float x1 = -2;
-				float x2 = 2;
-				float y1 = 0;
-				float y2 = 2;
-				float z1 = 0;
-				if (i % 2 == 0) {
-					x1 += 6;
-					x2 += 6;
-				}
+			cameraC = 0.1;
 
-				//x1 = -2 x2 = 2 y1=0 y2 =2 z1=0 z2 =1
-				glBegin(GL_QUADS);
-				glNormal3f(0, 1, 0);	// Set quad normal direction.
-				glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-				glVertex3f(x1, y1, z1 - i);
-				glTexCoord2f(0, 0.85);
-				glVertex3f(x2, y1, z1 - i);
-				glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-				glVertex3f(x2, y2, z1 - i);
-				glTexCoord2f(0.5, 0);
-				glTexCoord2f(0, 0.85);
-				glVertex3f(x1, y2, z1 - i);
-				glEnd();
-			}
 		}
-
-
-
-		if (mode1 && !mode2) {
-			glBindTexture(GL_TEXTURE_2D, tex_groundMode1.texture[0]);	// Bind the ground texture
-		}
-		else glBindTexture(GL_TEXTURE_2D, tex_groundMode2.texture[0]);
-
-
-		//Part 1 of lane 2
-		glTranslatef(6.0, 0.0, 0.0);
-
-		glBegin(GL_QUADS);
-		glNormal3f(0, 1, 0);	// Set quad normal direction.
-		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-		glVertex3f(-2, 0, -50);
-		glTexCoord2f(0.85, 0);
-		glVertex3f(2, 0, -50);
-		glTexCoord2f(0.85, 0.85);
-		glVertex3f(2, 0, 20);
-		glTexCoord2f(0, 0.85);
-		glVertex3f(-2, 0, 20);
-		glEnd();
-
-		//Part 2 of lane 1
-		glTranslatef(-6.0, 0.0, -70.0);
-
-		glBegin(GL_QUADS);
-		glNormal3f(0, 1, 0);	// Set quad normal direction.
-		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-		glVertex3f(-2, 0, -50);
-		glTexCoord2f(0.85, 0);
-		glVertex3f(2, 0, -50);
-		glTexCoord2f(0.85, 0.85);
-		glVertex3f(2, 0, 20);
-		glTexCoord2f(0, 0.85);
-		glVertex3f(-2, 0, 20);
-		glEnd();
-
-		//Part 2 of lane 2
-		glTranslatef(6.0, 0.0, 0.0);
-
-		glBegin(GL_QUADS);
-		glNormal3f(0, 1, 0);	// Set quad normal direction.
-		glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-		glVertex3f(-2, 0, -50);
-		glTexCoord2f(0.85, 0);
-		glVertex3f(2, 0, -50);
-		glTexCoord2f(0.85, 0.85);
-		glVertex3f(2, 0, 20);
-		glTexCoord2f(0, 0.85);
-		glVertex3f(-2, 0, 20);
-		glEnd();
-
+		// Draw Ground
+		RenderGround();
+		//Draw Character
+		glPushMatrix();
+		glTranslated(0, 4.0 + jumpOffset, 15);
+		glScaled(0.15, 0.15, 0.15);
+		drawMinion();
 		glPopMatrix();
 
+		glEnable(GL_TEXTURE_2D);
+		glColor3d(1, 1, 1);
 
-		glEnable(GL_LIGHTING);	// Enable lighting again for other entites coming throung the pipeline.
-		glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
-		glDisable(GL_TEXTURE_2D);
+		glPushMatrix();
+		GLUquadricObj* qobj;
+		qobj = gluNewQuadric();
+		glTranslated(10, 0, 50);
+		glRotated(90, 1, 0, 1);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		gluQuadricTexture(qobj, true);
+		gluQuadricNormals(qobj, GL_SMOOTH);
+		gluSphere(qobj, 100, 100, 100);
+		gluDeleteQuadric(qobj);
+		glPopMatrix();
+
+		InitLightSource();
+		glColor3f(1, 0, 1);
+
+		//print(10, 7, 0, "Score");
+		char* p0s[235];
+		sprintf((char*)p0s, "Score=%f", score);
+		print(firstPerson ? 7 : 10, firstPerson ? 5 : 7, (char*)p0s);
+		char* p1s[235];
+		sprintf((char*)p0s, "life:%d", lifes);
+		print(firstPerson ? 7 : 10, firstPerson ? 4 : 6, (char*)p1s);
+		glutSwapBuffers();
+		cout << "ay haga\n";
+	}
+	else {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		lifes = 0;
+		char* p0s[235];
+		sprintf((char*)p0s, "Score=%f", score);
+		print(-1,0, (char*)p0s);
+		char* p1s[235];
+		sprintf((char*)p0s, "life:%d", lifes);
+		print(-1,1, (char*)p1s);
+		print(-1, 2,"To play again press n");
+		glutSwapBuffers();
+		cout << "ay haga2\n";
+
 
 	}
 
+}
 
-	void timerMoveArms(int val)
+//=======================================================================
+// Keyboard Function
+//=======================================================================
+void myKeyboard(unsigned char button, int x, int y)
+{
+	switch (button)
 	{
-		int x = angleArms;
-		if (x == -85) upArms = true;
-		if (x < 85 && upArms) {
-			angleArms += 5;
-		}
-		if (x >= 85 || !upArms) {
-			upArms = false;
-			if (x > -85)
-			{
-				angleArms -= 5;
-			}
-		}
-		glutPostRedisplay();
-		glutTimerFunc(30, timerMoveArms, 1);
+	case 'u': {
+		jumping = true;
 	}
+			  break;
 
+	case 'a': {
+		offsetCounter = 0.1;
+		jumping = true;
 
-
-	void timerMoveLegs(int val)
-	{
-		int x = angleLegs;
-		if (x == -50) upLegs = true;
-		if (x < 50 && upLegs) {
-			angleLegs += 5;
-		}
-		if (x >= 50 || !upLegs) {
-			upLegs = false;
-			if (x > -50)
-			{
-				angleLegs -= 5;
-			}
-		}
-		glutPostRedisplay();
-		glutTimerFunc(30, timerMoveLegs, 1);
+		//xoffset = 0.28;
+		limitOffset = 0.28;
+		lane1 = true;
 	}
+			  break;
 
-	void drawMinion()
+	case 'd':
 	{
-		//glDisable(GL_LIGHTING);
-		glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+		jumping = true;
 
-
-
-		GLUquadricObj* quadratic;
-		quadratic = gluNewQuadric();
-
-		GLUquadricObj* quadraticJeans;
-		quadraticJeans = gluNewQuadric();
-		gluQuadricTexture(quadraticJeans, GL_TRUE);
-
-
-
-
-		glPushMatrix();
-		//editing
-		glTranslated(0, -10, 0);
-		glScaled(400, 150, 400);
-		glRotated(-45, 0, 1, 0);
-		//CLOTHES
-		if (mode1 && !mode2) glBindTexture(GL_TEXTURE_2D, tex_jeans.texture[0]);
-		else glBindTexture(GL_TEXTURE_2D, tex_jeansMode2.texture[0]);
-		glPushMatrix();
-		glTranslated(0, -0.017, 0);
-		glRotated(90, 0, 1, 0);
-		glRotated(90, 1, 0, 0);
-		if (mode1 && !mode2) glColor3f(0.33, 0.33, 0.33);
-		else glColor3f(0.45, 0.63, 0.76);
-		gluCylinder(quadraticJeans, 0.005, 0.005, 0.02, 300, 300);
-		glPopMatrix();
-		glPushMatrix();
-		glTranslated(0, -0.037, 0);
-		gluSphere(quadraticJeans, 0.005, 300, 300);
-		glPopMatrix();
-
-		//LEGS
-		glPushMatrix();//left
-		glTranslated(-0.002, -0.043, 0);
-		glRotated(-45, 0, 1, 0);
-		glRotated(angleLegs, 0, 0, 1);
-		glRotated(90, 1, 0, 0);
-		gluCylinder(quadraticJeans, 0.001, 0.001, 0.01, 300, 300);
-		glPopMatrix();
-		glPushMatrix();//right
-		if (mode1 && !mode2) glColor3f(0.33, 0.33, 0.33);
-		else glColor3f(0.45, 0.63, 0.76);
-		glTranslated(0.0008, -0.043, -0.0017);
-		glRotated(-45, 0, 1, 0);
-		glRotated(-angleLegs, 0, 0, 1);
-		glRotated(90, 1, 0, 0);
-		gluCylinder(quadraticJeans, 0.001, 0.001, 0.01, 300, 300);
-		glPopMatrix();
-
-		glDisable(GL_TEXTURE_2D);
-		//HEAD
-		glPushMatrix();
-		if (mode1 && !mode2) glColor3ub(144, 94, 173);
-		else glColor3ub(252, 224, 41);
-		gluSphere(quadratic, 0.0005, 30, 30);
-		glPopMatrix();
-		//FACE
-		glPushMatrix();
-		glRotated(90, 0, 1, 0);
-		glRotated(90, 1, 0, 0);
-		gluCylinder(quadratic, 0.005, 0.005, 0.017, 300, 300);
-		glPopMatrix();
-		//ARMS
-		glPushMatrix();//left
-		glTranslated(0, -0.012, 0.008);
-		glRotated(-45, 0, 1, 0);
-		glRotated(-angleArms, 0, 0, 1);
-		glRotated(90, 1, 0, 0);
-		gluCylinder(quadratic, 0.001, 0.001, 0.01, 300, 300);
-		glPopMatrix();
-		glPushMatrix();//right
-		glTranslated(0.008, -0.012, 0);
-		glRotated(-45, 0, 1, 0);
-		glRotated(angleArms, 0, 0, 1);
-		glRotated(90, 1, 0, 0);
-		gluCylinder(quadratic, 0.001, 0.001, 0.01, 300, 300);
-		glPopMatrix();
-		//GOGGLES
-		glPushMatrix();
-		if (mode1 && !mode2) glColor3f(0, 0, 0);
-		else glColor3ub(10, 117, 188);
-		glTranslated(0, -0.0045, 0);
-		glRotated(90, 0, 1, 0);
-		glRotated(90, 1, 0, 0);
-		gluCylinder(quadratic, 0.005005, 0.005005, 0.0025, 300, 300);
-		glPopMatrix();
-		//HAIR
-		glColor3f(0, 0, 0);
-		glPushMatrix();
-		glBegin(GL_LINES);
-		glVertex3f(0, 0, 0);
-		glVertex3f(0, 0.01, 0);
-		glVertex3f(0.002, 0, 0);
-		glVertex3f(0.001, 0.01, 0);
-		glVertex3f(-0.002, 0, 0);
-		glVertex3f(-0.001, 0.01, 0);
-		glVertex3f(0, 0, 0.001);
-		glVertex3f(0, 0.01, 0.002);
-		glVertex3f(0.002, 0, 0);
-		glVertex3f(0.002, 0.01, 0);
-		glEnd();
-		glPopMatrix();
-
-		glPopMatrix();
-
-		glEnable(GL_LIGHTING);
+		limitOffset = -6;
+		offsetCounter = -0.1;
+		//xoffset =-6;
+		lane1 = false;
 	}
-	//=======================================================================
-	// Display Function
-	//=======================================================================
-	void myDisplay(void)
-	{
-		if (!gameOver) {
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			/*cout << xoffset;*/
-				//animation between lanes
-			if ((xoffset < limitOffset && offsetCounter>0) || (xoffset > limitOffset && offsetCounter < 0)) {
-				xoffset += offsetCounter;
-			}
-			camera += cameraC;
-			if (camera > 2) {
-				cameraC = -0.1;
-			}
-			else {
-				cameraC = 0.1;
+	break;
 
-			}
-			// Draw Ground
-			RenderGround();
-			//Draw Character
-			glPushMatrix();
-			glTranslated(0, 4.0 + jumpOffset, 15);
-			glScaled(0.15, 0.15, 0.15);
-			drawMinion();
-			glPopMatrix();
+	case 'h': {
+		glLoadIdentity();	//Clear Model_View Matrix
+		firstPerson = !firstPerson;
+		if (!firstPerson) {
+			//cout << Eye3rd.x << Eye3rd.y << Eye3rd.z << At3rd.x << At3rd.y << At3rd.z << Up3rd.x << Up3rd.y << Up3rd.z << endl;
+			//cout << "hi" << Eye3rd.x << '\n' << Eye3rd.y << '\n' << Eye3rd.z << '\n';
 
-			glEnable(GL_TEXTURE_2D);
-			glColor3d(1, 1, 1);
-
-			glPushMatrix();
-			GLUquadricObj* qobj;
-			qobj = gluNewQuadric();
-			glTranslated(10, 0, 50);
-			glRotated(90, 1, 0, 1);
-			glBindTexture(GL_TEXTURE_2D, tex);
-			gluQuadricTexture(qobj, true);
-			gluQuadricNormals(qobj, GL_SMOOTH);
-			gluSphere(qobj, 100, 100, 100);
-			gluDeleteQuadric(qobj);
-			glPopMatrix();
-
-			InitLightSource();
-			glColor3f(1, 0, 1);
-
-			//print(10, 7, 0, "Score");
-			char* p0s[235];
-			sprintf((char*)p0s, "Score=%f", score);
-			print(firstPerson ? 7 : 10, firstPerson ? 5 : 7, (char*)p0s);
-			char* p1s[235];
-			sprintf((char*)p0s, "life:%d", lifes);
-			print(firstPerson ? 7 : 10, firstPerson ? 4 : 6, (char*)p1s);
-			glutSwapBuffers();
+			gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);
+			glutPostRedisplay();
 		}
 		else {
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			lifes = 0;
-			char* p0s[235];
-			sprintf((char*)p0s, "Score=%f", score);
-			print(-1, 0, (char*)p0s);
-			char* p1s[235];
-			sprintf((char*)p0s, "life:%d", lifes);
-			print(-1, 1, (char*)p1s);
-			print(-1, 2, "To play again press n");
-			glutSwapBuffers();
-
-
+			//cout << EyeFps.x << EyeFps.y << EyeFps.z << AtFps.x << AtFps.y << AtFps.z << UpFps.x << UpFps.y << UpFps.z << endl;
+			gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
+			glutPostRedisplay();
 		}
-
 	}
+			  break;
+	case 'j': {
+	}
+			  break;
 
-	//=======================================================================
-	// Keyboard Function
-	//=======================================================================
-	void myKeyboard(unsigned char button, int x, int y)
-	{
-		switch (button)
-		{
-		case 'u': {
-			jumping = true;
-		}
-				  break;
-
-		case 'a': {
-			offsetCounter = 0.1;
-			jumping = true;
-
-			//xoffset = 0.28;
-			limitOffset = 0.28;
-			lane1 = true;
-		}
-				  break;
-
-		case 'd':
-		{
-			jumping = true;
-
-			limitOffset = -6;
-			offsetCounter = -0.1;
-			//xoffset =-6;
-			lane1 = false;
-		}
+	case ' ':
+		start = true;
 		break;
 
-		case 'h': {
-			glLoadIdentity();	//Clear Model_View Matrix
-			firstPerson = !firstPerson;
-			if (!firstPerson) {
-				gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);
-				glutPostRedisplay();
-			}
-			else {
-				gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
-				glutPostRedisplay();
-			}
-		}
-				  break;
-		case 'j': {
-		}
-				  break;
+	case 'n':
+		gameOver = false;
+		track = 0;
+		mode2 = false;
+		mode1 = true;
+		start = false;
+		lifes = 5;
+		score = 0;
+		break;
 
-		case ' ':
-			start = true;
-			break;
+	case 'r':
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		break;
 
-		case 'n':
-			gameOver = false;
-			track = 0;
-			mode2 = false;
-			mode1 = true;
-			start = false;
-			lifes = 5;
-			score = 0;
-			break;
+	case 27:
+		exit(0);
+		break;
 
-		case 'r':
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			break;
+	default:		
 
-
-		case 27:
-			exit(0);
-			break;
-
-		default:
-
-			break;
-		}
-		glutPostRedisplay();
+		break;
 	}
+	glutPostRedisplay();
+}
 
-	//=======================================================================
-	// Anim Function
-	//=======================================================================
-	void anim() {
-		if (jumping) {
-			/*cout << "Jumping";*/
-			jumpOffset = 3 * jumpCounter - jumpCounter * jumpCounter;
-			jumpCounter += 0.07;
-			if (jumpOffset < 0) {
-				jumping = false;
-				jumpOffset = 0.0;
-				jumpCounter = 0.0;
-			}
+//=======================================================================
+// Anim Function
+//=======================================================================
+void anim() {
+	if (jumping) {
+		/*cout << "Jumping";*/
+		jumpOffset = 3 * jumpCounter - jumpCounter * jumpCounter;
+		jumpCounter += 0.07;
+		if (jumpOffset < 0) {
+			jumping = false;
+			jumpOffset = 0.0;
+			jumpCounter = 0.0;
 		}
 	}
+}
 
 
-	//=======================================================================
-	// Motion Function
-	//=======================================================================
-	void myMotion(int x, int y)
+//=======================================================================
+// Motion Function
+//=======================================================================
+void myMotion(int x, int y)
+{
+	y = HEIGHT - y;
+
+	if (cameraZoom - y > 0)
 	{
-		y = HEIGHT - y;
+		//	Eye.x += -0.1;
+		Eye3rd.z += -0.1;
+		EyeFps.z += -0.1;
+	}
+	else
+	{
+		//	Eye.x += 0.1;
+		Eye3rd.z += 0.1;
+		EyeFps.z += 0.1;
+	}
 
-		if (cameraZoom - y > 0)
-		{
-			//	Eye.x += -0.1;
-			Eye3rd.z += -0.1;
-			EyeFps.z += -0.1;
-		}
-		else
-		{
-			//	Eye.x += 0.1;
-			Eye3rd.z += 0.1;
-			EyeFps.z += 0.1;
-		}
+	cameraZoom = y;
 
+	glLoadIdentity();	//Clear Model_View Matrix
+	if (!firstPerson) {
+		gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);	//Setup Camera with modified paramters
+
+	}
+	else {
+		gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
+	}
+
+	GLfloat light_position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+	glutPostRedisplay();	//Re-draw scene 
+}
+
+//=======================================================================
+// Mouse Function
+//=======================================================================
+void myMouse(int button, int state, int x, int y)
+{
+	y = HEIGHT - y;
+
+	if (state == GLUT_DOWN)
+	{
 		cameraZoom = y;
+	}
+}
 
-		glLoadIdentity();	//Clear Model_View Matrix
-		if (!firstPerson) {
-			gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);	//Setup Camera with modified paramters
 
-		}
-		else {
-			gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
-		}
-
-		GLfloat light_position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
-		glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-
-		glutPostRedisplay();	//Re-draw scene 
+//=======================================================================
+// Reshape Function
+//=======================================================================
+void myReshape(int w, int h)
+{
+	if (h == 0) {
+		h = 1;
 	}
 
-	//=======================================================================
-	// Mouse Function
-	//=======================================================================
-	void myMouse(int button, int state, int x, int y)
-	{
-		y = HEIGHT - y;
+	WIDTH = w;
+	HEIGHT = h;
 
-		if (state == GLUT_DOWN)
-		{
-			cameraZoom = y;
-		}
+	// set the drawable region of the window
+	glViewport(0, 0, w, h);
+
+	// set up the projection matrix 
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(fovy, (GLdouble)WIDTH / (GLdouble)HEIGHT, zNear, zFar);
+
+	// go back to modelview matrix so we can move the objects about
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	if (!firstPerson) {
+		gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);
+
 	}
-
-
-	//=======================================================================
-	// Reshape Function
-	//=======================================================================
-	void myReshape(int w, int h)
-	{
-		if (h == 0) {
-			h = 1;
-		}
-
-		WIDTH = w;
-		HEIGHT = h;
-
-		// set the drawable region of the window
-		glViewport(0, 0, w, h);
-
-		// set up the projection matrix 
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		gluPerspective(fovy, (GLdouble)WIDTH / (GLdouble)HEIGHT, zNear, zFar);
-
-		// go back to modelview matrix so we can move the objects about
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		if (!firstPerson) {
-			gluLookAt(Eye3rd.x, Eye3rd.y, Eye3rd.z, At3rd.x, At3rd.y, At3rd.z, Up3rd.x, Up3rd.y, Up3rd.z);
-
-		}
-		else {
-			gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
-		}
-
-
-		//render_score();
-	}
-
-	//=======================================================================
-	// Assets Loading Function
-	//=======================================================================
-	void LoadAssets()
-	{
-		// Loading Model files
-		//model_house.Load("Models/house/house.3ds");
-		//model_tree.Load("Models/tree/tree1.3ds");
-
-		// Loading texture files
-		tex_groundMode1.Load("Textures/ground.bmp");
-		tex_groundMode2.Load("Textures/grass.bmp");
-		tex_obstacleMode1.Load("Textures/obstacleMode2.bmp");
-		tex_obstacleMode2.Load("Textures/obstacleMode1.bmp");
-		tex_jeans.Load("Textures/jeans.bmp");
-		tex_jeansMode2.Load("Textures/jeansMode2.bmp");
-		loadBMP(&tex, "Textures/sky.bmp", true);
-
+	else {
+		gluLookAt(EyeFps.x, EyeFps.y, EyeFps.z, AtFps.x, AtFps.y, AtFps.z, UpFps.x, UpFps.y, UpFps.z);
 	}
 
 
-	//=======================================================================
-	// Main Function
-	//=======================================================================
-	void main(int argc, char** argv)
-	{
-		glutInit(&argc, argv);
+	//render_score();
+}
 
-		glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+//=======================================================================
+// Assets Loading Function
+//=======================================================================
+void LoadAssets()
+{
+	// Loading Model files
+	//model_house.Load("Models/house/house.3ds");
+	//model_tree.Load("Models/tree/tree1.3ds");
 
-		glutInitWindowSize(WIDTH, HEIGHT);
+	// Loading texture files
+	tex_groundMode1.Load("Textures/ground.bmp");
+	tex_groundMode2.Load("Textures/grass.bmp");
+	tex_obstacleMode1.Load("Textures/obstacleMode2.bmp");
+	tex_obstacleMode2.Load("Textures/obstacleMode1.bmp");
+	tex_jeans.Load("Textures/jeans.bmp");
+	tex_jeansMode2.Load("Textures/jeansMode2.bmp");
+	loadBMP(&tex, "Textures/sky.bmp", true);
 
-		glutInitWindowSize(1200, 600);
-		glutInitWindowPosition(50, 50);
+}
 
-		glutCreateWindow(title);
+//=======================================================================
+// Main Function
+//=======================================================================
+void main(int argc, char** argv)
+{
+	glutInit(&argc, argv);
 
-		glutDisplayFunc(myDisplay);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
-		glutIdleFunc(anim);
+	glutInitWindowSize(WIDTH, HEIGHT);
 
-		glutKeyboardFunc(myKeyboard);
+	glutInitWindowSize(1200, 600);
+	glutInitWindowPosition(50, 50);
 
-		glutMotionFunc(myMotion);
+	glutCreateWindow(title);
 
-		glutMouseFunc(myMouse);
+	glutDisplayFunc(myDisplay);
 
-		glutReshapeFunc(myReshape);
+	glutIdleFunc(anim);
 
-		glutTimerFunc(0, timerMoveArms, 1);
+	glutKeyboardFunc(myKeyboard);
 
-		glutTimerFunc(0, timerMoveLegs, 1);
+	glutMotionFunc(myMotion);
 
-		myInit();
+	glutMouseFunc(myMouse);
+
+	glutReshapeFunc(myReshape);
+
+	glutTimerFunc(0, timerMoveArms, 1);
+
+	glutTimerFunc(0, timerMoveLegs, 1);
+
+	myInit();
 
 
-		LoadAssets();
+	LoadAssets();
 
-		glEnable(GL_LIGHT0);
-		//glEnable(GL_DEPTH_TEST);
-		//glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	//glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_LIGHTING);
+	
+	//glShadeModel(GL_SMOOTH);
 
-		//glShadeModel(GL_SMOOTH);
-
-		glutMainLoop();
-	}
+	glutMainLoop();
+}
