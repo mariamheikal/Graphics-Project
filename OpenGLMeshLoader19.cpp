@@ -19,12 +19,8 @@ char title[] = "3D Model Loader Sample";
 //game variables
 bool start = false;
 bool jumping = false;
-float track = 0.0;
+int track = 0;
 float xoffset = 0;
-float camera = -2.0;
-float cameraC = 0.1;
-float offsetCounter = 0.1;
-float limitOffset = 0;
 float yJump = 4;
 float jumpOffset = 0.0;
 float jumpCounter = 1.0;
@@ -34,7 +30,7 @@ bool gameover = false;
 GLdouble fovy = 45.0;
 GLdouble aspectRatio = (GLdouble)WIDTH / (GLdouble)HEIGHT;
 GLdouble zNear = 0.1;
-GLdouble zFar = 1000;
+GLdouble zFar = 100;
 
 //move arms & legs
 int angleArms = 0;
@@ -91,39 +87,23 @@ void InitLightSource()
 
 	// Enable Light Source number 0
 	// OpengL has 8 light sources
+	glEnable(GL_LIGHT0);
 
 	// Define Light source 0 ambient light
-	GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 0.0f };
+	GLfloat ambient[] = { 0.1f, 0.1f, 0.1, 1.0f };
 	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
 
-	//// Define Light source 0 diffuse light
-	GLfloat diffuse[] = { 0.7f, 0.7f, 0.7f, 1.0f };
+	// Define Light source 0 diffuse light
+	GLfloat diffuse[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 
-	//// Define Light source 0 Specular light
-	/*GLfloat specular[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);*/
+	// Define Light source 0 Specular light
+	GLfloat specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
 
-	//// Finally, define light source 0 position in World Space
-	GLfloat light_position[] = { xoffset, 0.6f, -track, 0.0f };
+	// Finally, define light source 0 position in World Space
+	GLfloat light_position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-
-	/*GLfloat ambient[] = { 0.7f, 0.7f, 0.7, 1.0f };
-	GLfloat diffuse[] = { 0.6f, 0.6f, 0.6, 1.0f };
-	GLfloat specular[] = { 1.0f, 1.0f, 1.0, 1.0f };
-	GLfloat shininess[] = { 60 };
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
-	glMaterialfv(GL_FRONT, GL_SHININESS, shininess);
-	GLfloat light_position[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-
-	GLfloat lightIntensity[] = { 0.7f, 0.7f, 1, 1.0f };
-
-	glLightfv(GL_FRONT, GL_POSITION, light_position);
-	glLightfv(GL_FRONT, GL_DIFFUSE, lightIntensity);
-	glEnable(GL_LIGHT0);*/
-
 }
 
 //=======================================================================
@@ -180,6 +160,7 @@ void myInit(void)
 	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
 	//*******************************************************************************************//
 
+	InitLightSource();
 
 	InitMaterial();
 
@@ -193,7 +174,7 @@ void myInit(void)
 //=======================================================================
 void RenderGround()
 {
-	//glDisable(GL_LIGHTING);	// Disable lighting 
+	glDisable(GL_LIGHTING);	// Disable lighting 
 
 	if (mode1 && !mode2) glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 	else glColor3f(0.50, 0.72, 0.20);
@@ -243,7 +224,6 @@ void RenderGround()
 
 			}
 
-			
 		}
 			}
 	if (track > 70 && !mode2 && mode1) {
@@ -433,7 +413,7 @@ void timerMoveLegs(int val)
 
 void drawMinion()
 {
-	//glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
 
@@ -550,59 +530,47 @@ void drawMinion()
 //=======================================================================
 void myDisplay(void)
 {
+	if (!gameover) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		/*cout << xoffset;*/
+		// Draw Ground
+		RenderGround();
+		//Draw Character
+		glPushMatrix();
+		glTranslated(0, 4 + jumpOffset, 15);
+		glScaled(0.15, 0.15, 0.15);
+		drawMinion();
+		glPopMatrix();
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	/*cout << xoffset;*/
-		//animation between lanes
-	if ((xoffset < limitOffset && offsetCounter>0) || (xoffset > limitOffset && offsetCounter < 0)) {
-		xoffset += offsetCounter;
+		// Draw Tree Model
+		//glPushMatrix();
+		//glTranslatef(10, 0, 0);
+		//glScalef(0.7, 0.7, 0.7);
+		//model_tree.Draw();
+		//glPopMatrix();
+
+		//// Draw House Model
+		//glPushMatrix();
+		//glRotatef(90.f, 1, 0, 0);
+		//model_house.Draw();
+		//glPopMatrix();
+	//	yJump = 4;
+
+		glPushMatrix();
+		GLUquadricObj* qobj;
+		qobj = gluNewQuadric();
+		glTranslated(50, 0, 0);
+		glRotated(90, 1, 0, 1);
+		//glBindTexture(GL_TEXTURE_2D, tex);
+		gluQuadricTexture(qobj, true);
+		gluQuadricNormals(qobj, GL_SMOOTH);
+		gluSphere(qobj, 100, 100, 100);
+		gluDeleteQuadric(qobj);
+		glPopMatrix();
+
+		glutSwapBuffers();
+
 	}
-	camera += cameraC;
-	if (camera > 2) {
-		cameraC = -0.1;
-	}
-	else {
-		cameraC = 0.1;
-
-	}
-	// Draw Ground
-	RenderGround();
-	//Draw Character
-	glPushMatrix();
-	glTranslated(0, 4 + jumpOffset, 15);
-	glScaled(0.15, 0.15, 0.15);
-	drawMinion();
-	glPopMatrix();
-	
-	// Draw Tree Model
-	//glPushMatrix();
-	//glTranslatef(10, 0, 0);
-	//glScalef(0.7, 0.7, 0.7);
-	//model_tree.Draw();
-	//glPopMatrix();
-
-	//// Draw House Model
-	//glPushMatrix();
-	//glRotatef(90.f, 1, 0, 0);
-	//model_house.Draw();
-	//glPopMatrix();
-//	yJump = 4;
-
-	glPushMatrix();
-	GLUquadricObj* qobj;
-	qobj = gluNewQuadric();
-	glTranslated(50, 0, 0);
-	glRotated(90, 1, 0, 1);
-	//glBindTexture(GL_TEXTURE_2D, tex);
-	gluQuadricTexture(qobj, true);
-	gluQuadricNormals(qobj, GL_SMOOTH);
-	gluSphere(qobj, 100, 100, 100);
-	gluDeleteQuadric(qobj);
-	glPopMatrix();
-	InitLightSource();
-
-	glutSwapBuffers();
-
 }
 
 //=======================================================================
@@ -615,22 +583,18 @@ void myKeyboard(unsigned char button, int x, int y)
 	case 'u': {
 		jumping = true;
 	}
-			  break;
+			break;
 
 	case 'a': {
-		offsetCounter = 0.1;
 
-		//xoffset = 0.28;
-		limitOffset = 0.28;
+		xoffset = 0.28;
 		lane1 = true;
 	}
-			  break;
+			break;
 
 	case 'd':
 	{
-		limitOffset = -6;
-		offsetCounter = -0.1;
-		//xoffset =-6;
+		xoffset = -6;
 		lane1 = false;
 	}
 	break;
@@ -647,10 +611,10 @@ void myKeyboard(unsigned char button, int x, int y)
 			glutPostRedisplay();
 		}
 	}
-			  break;
+			break;
 	case 'j': {
 	}
-			  break;
+			break;
 
 	case ' ':
 		start = true;
@@ -831,17 +795,10 @@ void main(int argc, char** argv)
 
 	glutTimerFunc(0, timerMoveLegs, 1);
 
+
 	myInit();
 
-
 	LoadAssets();
-	glClearColor(1.0, 1.0, 0.0, 0.0);
-
-	glEnable(GL_LIGHT0);
-	//glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_LIGHTING);
-	
-	//glShadeModel(GL_SMOOTH);
 
 	glutMainLoop();
 }
